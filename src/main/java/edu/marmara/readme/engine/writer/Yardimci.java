@@ -3,7 +3,6 @@ package edu.marmara.readme.engine.writer;
 import edu.marmara.readme.engine.Sabitler;
 import edu.marmara.readme.engine.model.Ders;
 import edu.marmara.readme.engine.model.Hoca;
-import edu.marmara.readme.engine.model.OgrenciGorusu;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -51,14 +50,6 @@ public final class Yardimci {
         return "(#-" + temiz + ")";
     }
 
-    /** Görüşten tarih bilgisini "ℹ️ Yorum **AA.YYYY** tarihinde yapılmıştır." olarak formatlar; tarih yoksa "". */
-    public static String gorustenTarihGetir(OgrenciGorusu gorus) {
-        if (gorus.tarih == null || gorus.tarih.ay == 0 || gorus.tarih.yil == 0) {
-            return "";
-        }
-        String ay = gorus.tarih.ay > 9 ? String.valueOf(gorus.tarih.ay) : "0" + gorus.tarih.ay;
-        return "ℹ️ Yorum **" + ay + "." + gorus.tarih.yil + "** tarihinde yapılmıştır.";
-    }
 
     /** HTML details etiketlerinin açılış/kapanış çiftini oluşturur. */
     public static DetayEtiketleri detayEtiketleriOlustur(String baslik, String girinti) {

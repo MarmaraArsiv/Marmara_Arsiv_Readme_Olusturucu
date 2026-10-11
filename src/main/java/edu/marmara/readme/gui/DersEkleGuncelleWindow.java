@@ -48,8 +48,6 @@ public class DersEkleGuncelleWindow {
             data = new DerslerBolumu();
             data.bolum_adi = Sabitler.VARSAYILAN_DERS_BOLUM_ADI;
             data.bolum_aciklamasi = Sabitler.VARSAYILAN_DERS_BOLUM_ACIKLAMASI;
-            data.guncel_olmayan_ders_aciklamasi = Sabitler.VARSAYILAN_GUNCEL_OLMAYAN_DERS_ACIKLAMASI;
-            data.ders_klasoru_bulunamadi_mesaji = Sabitler.VARSAYILAN_DERS_KLASORU_BULUNAMADI_MESAJI;
             jsonKaydet();
         }
 
@@ -100,8 +98,7 @@ public class DersEkleGuncelleWindow {
                 if (empty || ders == null) {
                     setText(null);
                 } else {
-                    String rozet = ders.isOrtakDers() ? " 🔗" : "";
-                    setText(ders.ad + rozet + "  [" + ders.tip + "]");
+                    setText(ders.ad + "  [" + ders.klasor + "]");
                 }
             }
         });

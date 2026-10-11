@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** dersler.json kök yapısı. */
-public class DerslerBolumu {
+public class DerslerBolumu extends JsonNesnesi {
     public String bolum_adi = "Dersler";
     public String bolum_aciklamasi = "";
-    public String ders_klasoru_bulunamadi_mesaji = "";
-    public String guncel_olmayan_ders_aciklamasi = "";
-    public EnPopulerDers en_populer_ders = new EnPopulerDers();
+    public String secmeli_bolum_adi = "Seçmeli Dersler";
+    public String secmeli_bolum_aciklamasi = "";
+    /** Her ders README'sinin sonundaki "🤝 Katkıda Bulun" paragrafı. */
+    public String katkida_bulun_metni = "";
     public List<Ders> dersler = new ArrayList<>();
 }

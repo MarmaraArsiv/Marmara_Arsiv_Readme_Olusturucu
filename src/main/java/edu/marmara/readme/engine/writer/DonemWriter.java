@@ -1,129 +1,89 @@
 package edu.marmara.readme.engine.writer;
 
-import edu.marmara.readme.engine.Sabitler;
 import edu.marmara.readme.engine.model.Ders;
 import edu.marmara.readme.engine.model.Donem;
-import edu.marmara.readme.engine.model.DersYildizYili;
-import edu.marmara.readme.engine.model.HocaKisaRef;
+import edu.marmara.readme.engine.model.Havuz;
+import edu.marmara.readme.engine.model.Hoca;
 import edu.marmara.readme.engine.model.Konfigurasyon;
-import edu.marmara.readme.engine.model.OgrenciGorusu;
 import edu.marmara.readme.engine.model.OneriGrubu;
+import edu.marmara.readme.engine.util.UrlKodla;
 
-import java.nio.file.Path;
-import java.text.Normalizer;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
-/** Python writers/donem_writer.py'nin Java portu. */
+/** Dönem klasörlerinin (1-1 … 4-2) ve seçmeli havuz klasörlerinin README.md'leri. */
 public class DonemWriter {
 
-    private final Path dokumanlarRepoYolu;
+    private final Map<String, Hoca> hocalar;
+    private final KorunanBloklar korunan;
+    private final Konfigurasyon konfig;
 
-    public DonemWriter(Path dokumanlarRepoYolu) {
-        this.dokumanlarRepoYolu = dokumanlarRepoYolu;
+    public DonemWriter(Map<String, Hoca> hocalar, KorunanBloklar korunan, Konfigurasyon konfig) {
+        this.hocalar = hocalar;
+        this.korunan = korunan;
+        this.konfig = konfig;
     }
 
-    private void writeOgrenciGorusu(BufferedReadmeWriter writer, List<OgrenciGorusu> gorusler, Konfigurasyon konfig) {
-        if (gorusler.isEmpty()) {
-            return;
-        }
-        writer.writeline("- 💭 **Öğrenci Görüşleri:**");
-        for (OgrenciGorusu gorus : gorusler) {
-            String kisi = gorus.kisi == null ? "" : gorus.kisi.strip();
-            writer.writeline("  - 👤 **_" + kisi + "_**: " + gorus.yorum + " " + Yardimci.gorustenTarihGetir(gorus));
-        }
-        writer.writeline("    - ℹ️ Siz de [linkten](" + konfig.ders_yorumlama + ") anonim şekilde görüşlerinizi belirtebilirsiniz.");
-    }
-
-    private void writeYildizlar(BufferedReadmeWriter writer, double kolaylik, double gereklilik, String girinti,
-                                  int oySayisi, String yilPrefix, Konfigurasyon konfig) {
-        writer.writeline(girinti + "- ✅ " + yilPrefix + "Dersi Kolay Geçer Miyim: " + Yardimci.puanlariYildizaCevir(kolaylik));
-        writer.writeline(girinti + "- 🎯 " + yilPrefix + "Ders Mesleki Açıdan Gerekli Mi: " + Yardimci.puanlariYildizaCevir(gereklilik));
-        writer.writeline(girinti + "  - ℹ️ Yıldızlar " + oySayisi + " oy üzerinden hesaplanmıştır. Siz de [linkten]("
-                + konfig.ders_oylama + ") anonim şekilde oylamaya katılabilirsiniz.");
-    }
-
-    private void writeYildizBolumu(BufferedReadmeWriter writer, Ders ders, Konfigurasyon konfig) {
-        writer.writeline("- ⭐ **Yıldız Sayıları:**");
-        if (ders.oy_sayisi > 0) {
-            writeYildizlar(writer, ders.kolaylik_puani, ders.gereklilik_puani, "  ", ders.oy_sayisi, "", konfig);
-        } else {
-            writer.writeline("    - ℹ️ Henüz yıldız veren yok. Siz de [linkten](" + konfig.ders_oylama
-                    + ") anonim şekilde oylamaya katılabilirsiniz.");
-            return;
-        }
-        if (!ders.yillara_gore_yildiz_sayilari.isEmpty()) {
-            Yardimci.DetayEtiketleri etiketler = Yardimci.detayEtiketleriOlustur("📅 Yıllara Göre Yıldız Sayıları", "  ");
-            writer.write(etiketler.acilis());
-            for (DersYildizYili y : ders.yillara_gore_yildiz_sayilari) {
-                writer.writeline("    - 📅 *" + y.yil + " yılı için yıldız bilgileri*");
-                writeYildizlar(writer, y.kolaylik_puani, y.gereklilik_puani, "      ", y.oy_sayisi, y.yil + " Yılında ", konfig);
+    /** Dönem README'si: genel tavsiyeler ve dönemin derslerinin ayrıntıları. */
+    public String yaz(Donem donem, List<Ders> dersler) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# 📅 ").append(donem.donem_adi).append("\n\n");
+        if (!donem.genel_tavsiyeler.isEmpty()) {
+            sb.append("## 📝 Genel Tavsiyeler\n\n");
+            for (String t : donem.genel_tavsiyeler) {
+                sb.append("- 💡 ").append(t).append("\n");
             }
-            writer.write(etiketler.kapanis());
         }
-    }
-
-    public void writeDonemReadme(BufferedReadmeWriter writer, Donem donem) {
-        writer.writeline("# 📅 " + donem.donem_adi + "\n");
-        writer.writeline("## 📝 Genel Tavsiyeler\n");
-        for (String tavsiye : donem.genel_tavsiyeler) {
-            writer.writeline("- 💡 " + tavsiye);
-        }
-        if (donem.yil != 0) {
-            writer.writeline("## 📚 Dönemin Zorunlu Dersleri\n");
-        }
-    }
-
-    public void writeDersToDonem(BufferedReadmeWriter writer, Ders ders, String guncelOlmayanDersAciklamasi,
-                                   Path donemKlasoru, Path dersKlasoru, Konfigurasyon konfig) {
-        writer.writeline("\n### 📘 " + ders.ad + "\n");
-        writer.writeline("#### 📄 Ders Bilgileri\n");
-        writer.writeline("- 📅 **Yıl:** " + ders.yil);
-        writer.writeline("- 📆 **Dönem:** " + ders.donem);
-        writer.writeline("- 🏫 **Ders Tipi:** " + ders.tip);
-
-        writeOgrenciGorusu(writer, ders.ogrenci_gorusleri, konfig);
-        writeYildizBolumu(writer, ders, konfig);
-
-        if (!ders.derse_dair_oneriler.isEmpty()) {
-            writer.writeline("#### 💡 Derse Dair Öneriler\n");
-            for (OneriGrubu grup : ders.derse_dair_oneriler) {
-                if (!grup.oneriler.isEmpty()) {
-                    writer.writeline("##### 📌 Öneri sahibi: " + grup.oneri_sahibi);
-                    for (String oneri : grup.oneriler) {
-                        writer.writeline("- " + Yardimci.kaynakLinkleriniGoreceliYap(oneri, donemKlasoru, dersKlasoru, dokumanlarRepoYolu));
-                    }
+        sb.append("## 📚 Dönemin Zorunlu Dersleri\n\n\n");
+        for (Ders d : dersler) {
+            sb.append("### 📘 ").append(d.ad).append("\n\n");
+            sb.append("#### 📄 Ders Bilgileri\n\n");
+            sb.append("- 📅 **Yıl:** ").append(d.yil).append("\n");
+            sb.append("- 📆 **Dönem:** ").append(d.donem).append("\n");
+            sb.append("- 🏫 **Ders Tipi:** ").append(d.tip).append("\n");
+            sb.append("- 🏷️ **Müfredat:** ").append(d.mufredat).append("\n");
+            if (!d.mufredat_notu.isEmpty()) {
+                sb.append("    - ℹ️ ").append(d.mufredat_notu).append("\n");
+            }
+            String yildiz = korunan.donemYildiz(donem.klasor, d.ad);
+            String gorus = korunan.donemGorus(donem.klasor, d.ad);
+            sb.append(yildiz != null ? yildiz : Parcalar.varsayilanYildiz("", konfig, d.ad));
+            sb.append(gorus != null ? gorus : Parcalar.varsayilanGorus("", konfig, d.ad));
+            sb.append("\n");
+            if (!d.derse_dair_oneriler.isEmpty()) {
+                sb.append("#### 💡 Derse Dair Öneriler\n\n");
+                for (OneriGrubu g : d.derse_dair_oneriler) {
+                    sb.append("##### 📌 Öneri sahibi: ").append(g.oneri_sahibi).append("\n");
+                    g.oneriler.forEach(o -> sb.append("- ").append(o).append("\n"));
                 }
+                sb.append("\n");
+            }
+            if (!d.akademisyenler.isEmpty()) {
+                sb.append("#### ").append(Parcalar.AKADEMISYENLER).append("\n");
+                sb.append(Parcalar.akademisyenListesi(d, hocalar)).append("\n");
             }
         }
-
-        writer.writeline("\n#### 📚 Faydalı Olabilecek Kaynaklar\n");
-        if (!ders.faydali_olabilecek_kaynaklar.isEmpty()) {
-            List<String> sirali = ders.faydali_olabilecek_kaynaklar.stream()
-                    .sorted(Comparator.comparing(DonemWriter::normalizeKey)).toList();
-            for (String kaynak : sirali) {
-                writer.writeline("- 📄 " + Yardimci.kaynakLinkleriniGoreceliYap(kaynak, donemKlasoru, dersKlasoru, dokumanlarRepoYolu) + " ✨");
-            }
-        }
-
-        writer.write("- 📄 [Genel Çıkmış Sorular](" + konfig.cikmislar + ")\n");
-        writer.writeline("  - ℹ️ " + Sabitler.FAYDALI_OLABILECEK_KAYNAKLAR_UYARI_MESAJI);
-
-        if (!ders.dersi_veren_hocalar.isEmpty()) {
-            writer.writeline("\n#### 👨‍🏫 👩‍🏫 Dersi Yürüten Akademisyenler:");
-            for (HocaKisaRef hoca : ders.dersi_veren_hocalar) {
-                writer.writeline("- **" + hoca.kisaltma + "** — " + hoca.ad);
-            }
-        }
-
-        if (!ders.guncel_mi) {
-            writer.writeline("\n#### ℹ️ Dersin içeriği güncel değil");
-            writer.writeline("- " + guncelOlmayanDersAciklamasi);
-        }
+        return sb.toString();
     }
 
-    private static String normalizeKey(String s) {
-        return Normalizer.normalize(s, Normalizer.Form.NFKD).toLowerCase(Locale.ROOT);
+    /** Seçmeli havuz README'si: açıklama ve derslerin listesi (karışık müfredatlıysa etiketleriyle). */
+    public String yazHavuz(Havuz havuz, List<Ders> dersler) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# 📚 ").append(havuz.ad).append("\n\n");
+        sb.append(havuz.aciklama).append("\n\n");
+        sb.append("## 📋 Ders Listesi\n\n\n");
+        Set<String> mufredatlar = new HashSet<>();
+        dersler.forEach(d -> mufredatlar.add(d.mufredat));
+        boolean etiketli = mufredatlar.size() > 1;
+        for (Ders d : dersler) {
+            sb.append("- 📘 [").append(d.ad).append("](./").append(UrlKodla.kodla(d.klasorAdi())).append("/)");
+            if (etiketli) {
+                sb.append(" _(🏷️ ").append(d.mufredat).append(")_");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }

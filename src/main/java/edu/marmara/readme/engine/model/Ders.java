@@ -1,43 +1,53 @@
 package edu.marmara.readme.engine.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * dersler.json içindeki "dersler" dizisinin bir öğesi.
- *
- * mufredatlar alanı Python aracında YOK — Marmara sürümüne özgü yeni alan:
- * bir dersin ait olduğu müfredat yıllarının listesi (örn. ["2026"] ya da
- * ["2021","2026"]). Bu liste 1'den fazla eleman içeriyorsa ders render
- * sırasında otomatik "Ortak Ders" rozeti alır (bkz. writer.Yardimci).
+ * dersler.json içindeki "dersler" dizisinin bir öğesi. Dizideki sıra, dersin ana README'de
+ * ve dönem README'sinde göründüğü sıradır.
  */
-public class Ders {
+public class Ders extends JsonNesnesi {
     public String ad = "";
-    /** 0-4 arası sınıf yılı (0 = yıla bağlı olmayan ders, örn. seçmeli). */
+    /** Repo köküne göre ders klasörü, ör. "2-2/Elektronik Devrelere Giriş" ya da "Mesleki Seçmeli/Bulut Bilişim". */
+    public String klasor = "";
+    /** 1-4 arası sınıf; seçmeli havuz derslerinde 0. */
     public int yil;
+    /** "Güz" ya da "Bahar"; seçmeli havuz derslerinde boş. */
     public String donem = "";
+    /** README'deki "Ders Tipi" değeri, ör. "Zorunlu" ya da "Seçmeli". */
     public String tip = "";
-    public boolean guncel_mi = true;
-
-    public List<HocaKisaRef> dersi_veren_hocalar = new ArrayList<>();
-
-    /** Python: derse_dair_oneriler — öneri sahibi başına gruplanmış serbest-metin öneri listesi. */
+    /** "Her İki Müfredat", "2026 Öncesi", "2026 Sonrası" ya da "2026 Öncesi (Zorunlu)" gibi. */
+    public String mufredat = "";
+    /** Müfredat satırının altındaki ℹ️ notu; boşsa yazılmaz. */
+    public String mufredat_notu = "";
+    /** Akademik yıla göre dersi yürüten hocalar, yeni yıl üstte. */
+    public List<AkademisyenYili> akademisyenler = new ArrayList<>();
     public List<OneriGrubu> derse_dair_oneriler = new ArrayList<>();
 
-    /** Python: faydali_olabilecek_kaynaklar — her biri markdown link(ler) içerebilen serbest metin. */
+    // --- Eski arayüz alanları: arayüz yeni yapıya geçene kadar derlensin diye duruyor, JSON'a yazılmaz.
+    @JsonIgnore
+    public boolean guncel_mi = true;
+    @JsonIgnore
+    public List<HocaKisaRef> dersi_veren_hocalar = new ArrayList<>();
+    @JsonIgnore
     public List<String> faydali_olabilecek_kaynaklar = new ArrayList<>();
-
-    public List<OgrenciGorusu> ogrenci_gorusleri = new ArrayList<>();
-    public List<DersYildizYili> yillara_gore_yildiz_sayilari = new ArrayList<>();
-
-    public int kolaylik_puani;
-    public int gereklilik_puani;
-    public int oy_sayisi;
-
-    /** Marmara'ya özgü: bu dersin ait olduğu müfredat etiketleri. */
+    @JsonIgnore
     public List<String> mufredatlar = new ArrayList<>();
 
-    public boolean isOrtakDers() {
-        return mufredatlar != null && mufredatlar.size() > 1;
+    /** Klasör bir dönem klasöründeyse (1-1 … 4-2) o dönemin klasör adı, seçmeli havuzundaysa havuz adı. */
+    @JsonIgnore
+    public String ustKlasor() {
+        int i = klasor.indexOf('/');
+        return i < 0 ? klasor : klasor.substring(0, i);
+    }
+
+    /** Klasörün son parçası (README'deki ders adıyla genelde aynıdır). */
+    @JsonIgnore
+    public String klasorAdi() {
+        int i = klasor.indexOf('/');
+        return i < 0 ? klasor : klasor.substring(i + 1);
     }
 }

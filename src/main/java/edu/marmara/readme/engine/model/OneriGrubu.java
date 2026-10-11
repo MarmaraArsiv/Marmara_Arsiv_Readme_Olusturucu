@@ -8,7 +8,7 @@ import java.util.List;
  * bir öğesi. Her "oneri" serbest metindir ve içinde markdown linki olabilir (link göreceli
  * hale getirme burada uygulanır, bkz. Yardimci.kaynakLinkleriniGoreceliYap).
  */
-public class OneriGrubu {
+public class OneriGrubu extends JsonNesnesi {
     public String oneri_sahibi = "";
     public List<String> oneriler = new ArrayList<>();
 }
