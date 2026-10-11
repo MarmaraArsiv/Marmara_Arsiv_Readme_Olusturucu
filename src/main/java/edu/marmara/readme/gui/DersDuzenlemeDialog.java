@@ -6,7 +6,6 @@ import edu.marmara.readme.engine.model.DersHocasi;
 import edu.marmara.readme.engine.model.DerslerBolumu;
 import edu.marmara.readme.engine.model.Donem;
 import edu.marmara.readme.engine.model.DonemlerBolumu;
-import edu.marmara.readme.engine.model.Havuz;
 import edu.marmara.readme.engine.model.HocalarBolumu;
 import edu.marmara.readme.engine.model.OneriGrubu;
 import javafx.collections.FXCollections;
@@ -308,20 +307,5 @@ public class DersDuzenlemeDialog {
         }
         onDeleted.accept(duzenlenecekDers);
         stage.close();
-    }
-
-    /** Pencere başlığındaki havuz adını bulmak için (ör. "Mesleki Seçmeli"). */
-    static String ustKlasorAdi(DonemlerBolumu donemler, String ust) {
-        for (Donem d : donemler.donemler) {
-            if (d.klasor.equals(ust)) {
-                return d.donem_adi;
-            }
-        }
-        for (Havuz h : donemler.havuzlar) {
-            if (h.klasor.equals(ust)) {
-                return h.ad;
-            }
-        }
-        return ust;
     }
 }

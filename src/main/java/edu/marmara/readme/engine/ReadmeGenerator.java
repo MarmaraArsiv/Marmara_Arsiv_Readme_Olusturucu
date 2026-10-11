@@ -60,6 +60,34 @@ public class ReadmeGenerator {
     private HocalarBolumu hocalar;
     private boolean hocaDersleriDegisti;
 
+    /** Arşivde JSON klasörünün aranacağı yerler (yeni yer önce). */
+    private static final List<String> JSON_KLASORU_ADAYLARI = List.of(".github/json_dosyalari", "json_dosyalari");
+
+    /**
+     * Verilen yol JSON klasörünün kendisi, arşiv reposunun kökü ya da JSON klasörünün eski yeri
+     * (json_dosyalari, .github/ altına taşınmadan önceki) olabilir; JSON klasörünü döner, bulamazsa null.
+     */
+    public static Path jsonKlasoruBul(Path verilen) {
+        if (verilen == null) {
+            return null;
+        }
+        Path yol = verilen.toAbsolutePath().normalize();
+        if (Files.exists(yol.resolve(KONFIGURASYON_JSON))) {
+            return yol;
+        }
+        for (Path kok : new Path[]{yol, yol.getParent()}) {
+            if (kok == null) {
+                continue;
+            }
+            for (String aday : JSON_KLASORU_ADAYLARI) {
+                if (Files.exists(kok.resolve(aday).resolve(KONFIGURASYON_JSON))) {
+                    return kok.resolve(aday);
+                }
+            }
+        }
+        return null;
+    }
+
     public ReadmeGenerator(Path jsonDeposu, Consumer<String> ilerlemeDinleyicisi) {
         this.jsonDeposu = jsonDeposu;
         this.ilerlemeDinleyicisi = ilerlemeDinleyicisi != null ? ilerlemeDinleyicisi : s -> {

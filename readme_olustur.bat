@@ -1,6 +1,12 @@
 @echo off
-REM Bassiz (GUI'siz) README uretimi: json_dosyalari klasorunu argumen olarak verin.
-REM Ornek: readme_olustur.bat ..\Marmara_Bilgisayar_Muhendisligi_Arsiv\json_dosyalari
+REM Arayuzsuz README uretimi.
+REM   readme_olustur.bat [arsiv klasoru]            README'leri JSON'dan uretir
+REM   readme_olustur.bat [arsiv klasoru] --kontrol  hicbir sey yazmaz, README'ler JSON ile uyumlu mu bakar
+REM Arsiv klasoru verilmezse aracin yanindaki ..\Marmara_Bilgisayar_Muhendisligi_Arsiv kullanilir.
+set "ARSIV=%~f1"
+if "%~1"=="" set "ARSIV=%~dp0..\Marmara_Bilgisayar_Muhendisligi_Arsiv"
 cd /d "%~dp0"
-call mvnw.cmd -q exec:java -Dexec.mainClass=edu.marmara.readme.cli.ReadmeOlusturCli -Dexec.args="%1"
+if not exist target\marmara-readme-araci-0.1.0.jar call mvnw.cmd -q -B -DskipTests package
+if errorlevel 1 (pause & exit /b 1)
+java -cp target\marmara-readme-araci-0.1.0.jar edu.marmara.readme.cli.ReadmeOlusturCli "%ARSIV%" %2
 pause

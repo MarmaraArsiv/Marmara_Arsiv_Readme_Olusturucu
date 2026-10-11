@@ -6,11 +6,11 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Arayüzsüz çalıştırma.
+ * Arayüzsüz çalıştırma. Yol olarak arşiv reposunun kökü ya da JSON klasörü verilebilir.
  * <pre>
- *   ReadmeOlusturCli &lt;json-deposu&gt;            README'leri JSON'dan üretip değişenleri yazar
- *   ReadmeOlusturCli &lt;json-deposu&gt; --kontrol  hiçbir şey yazmaz; JSON ile README'ler uyuşmuyorsa
- *                                               farklı dosyaları listeler ve 1 koduyla çıkar
+ *   ReadmeOlusturCli &lt;arşiv&gt;            README'leri JSON'dan üretip değişenleri yazar
+ *   ReadmeOlusturCli &lt;arşiv&gt; --kontrol  hiçbir şey yazmaz; JSON ile README'ler uyuşmuyorsa
+ *                                         farklı dosyaları listeler ve 1 koduyla çıkar
  * </pre>
  */
 public final class ReadmeOlusturCli {
@@ -28,7 +28,12 @@ public final class ReadmeOlusturCli {
     }
 
     private static void calistir(String[] args) {
-        Path jsonDeposu = args.length > 0 ? Path.of(args[0]) : Path.of(".");
+        Path verilen = args.length > 0 && !args[0].startsWith("--") ? Path.of(args[0]) : Path.of(".");
+        Path jsonDeposu = ReadmeGenerator.jsonKlasoruBul(verilen);
+        if (jsonDeposu == null) {
+            throw new IllegalStateException(verilen.toAbsolutePath() + " altında JSON klasörü bulunamadı "
+                    + "(arşiv reposunun kökünü ya da .github/json_dosyalari klasörünü verin).");
+        }
         boolean kontrol = List.of(args).contains("--kontrol");
         if (!kontrol) {
             new ReadmeGenerator(jsonDeposu, System.out::println).generateAll();

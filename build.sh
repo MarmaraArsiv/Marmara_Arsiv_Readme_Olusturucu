@@ -1,7 +1,6 @@
 #!/bin/bash
-# Projeyi derler ve çalıştırılabilir "fat jar" üretir (Linux/macOS).
-# Gereksinim: JDK 21+.
-cd "$(dirname "$0")"
-./mvnw -q clean package -DskipTests
-echo "Derleme tamamlandı: target/marmara-readme-araci-0.1.0.jar"
-echo "Çalıştırmak için: java -jar target/marmara-readme-araci-0.1.0.jar"
+# Aracı derler: target/marmara-readme-araci-0.1.0.jar (arayüz ve komut satırı tek dosyada).
+# Gereksinim: JDK 21. Maven kurmak gerekmez, mvnw kendisi indirir.
+cd "$(dirname "$0")" || exit 1
+source ./java_bul.sh || exit 1
+./mvnw -q -B -DskipTests package && echo "Derlendi: target/marmara-readme-araci-0.1.0.jar"

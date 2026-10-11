@@ -1,8 +1,8 @@
 @echo off
-REM Projeyi derler ve calistirilabilir "fat jar" uretir (Windows).
-REM Gereksinim: JDK 21+.
+REM Araci derler: target\marmara-readme-araci-0.1.0.jar (arayuz ve komut satiri tek dosyada).
+REM Gereksinim: JDK 21 (JAVA_HOME ya da PATH'te). Maven kurmak gerekmez, mvnw.cmd kendisi indirir.
 cd /d "%~dp0"
-call mvnw.cmd -q clean package -DskipTests
-echo Derleme tamamlandi: target\marmara-readme-araci-0.1.0.jar
-echo Calistirmak icin: java -jar target\marmara-readme-araci-0.1.0.jar
+call mvnw.cmd -q -B -DskipTests package
+if errorlevel 1 (pause & exit /b 1)
+echo Derlendi: target\marmara-readme-araci-0.1.0.jar
 pause

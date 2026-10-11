@@ -1,5 +1,6 @@
 package edu.marmara.readme.gui;
 
+import edu.marmara.readme.engine.ReadmeGenerator;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -10,7 +11,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /** Python main.py'nin (App sınıfının) Java/JavaFX portu — ana menü penceresi. */
@@ -20,16 +20,23 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Path jsonDeposu = AppConfig.jsonDeposu();
-        if (!Files.exists(jsonDeposu) || !Files.exists(jsonDeposu.resolve("konfigurasyon.json"))
-                && !hasAnyJson(jsonDeposu)) {
+        // Kayıtlı yol (eski json_dosyalari yeri dahil) ya da aracın yanındaki arşiv; bulunamazsa kullanıcıya sorulur.
+        Path jsonDeposu = ReadmeGenerator.jsonKlasoruBul(AppConfig.jsonDeposu());
+        if (jsonDeposu == null) {
+            jsonDeposu = ReadmeGenerator.jsonKlasoruBul(Path.of("..", "Marmara_Bilgisayar_Muhendisligi_Arsiv"));
+        }
+        while (jsonDeposu == null) {
             Path secilen = jsonDepoSecimiIste(primaryStage);
             if (secilen == null) {
                 return;
             }
-            jsonDeposu = secilen;
-            AppConfig.jsonDeposunuAyarla(jsonDeposu);
+            jsonDeposu = ReadmeGenerator.jsonKlasoruBul(secilen);
+            if (jsonDeposu == null) {
+                Dialogs.error("Bulunamadı", secilen + " içinde .github/json_dosyalari klasörü yok. "
+                        + "Arşiv reposunun klasörünü seçin.");
+            }
         }
+        AppConfig.jsonDeposunuAyarla(jsonDeposu);
         final Path depo = jsonDeposu;
 
         primaryStage.setTitle("Marmara Readme Düzenleyici");
@@ -55,17 +62,9 @@ public class MainApp extends Application {
         primaryStage.show();
     }
 
-    private boolean hasAnyJson(Path depo) {
-        try {
-            return Files.exists(depo) && Files.list(depo).anyMatch(p -> p.toString().endsWith(".json"));
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     private Path jsonDepoSecimiIste(Stage owner) {
-        Dialogs.info("JSON Deposu Seçin", "Lütfen JSON dosyalarının (hocalar.json, dersler.json, ...) "
-                + "tutulacağı/okunacağı klasörü seçin.");
+        Dialogs.info("Arşiv Klasörünü Seçin", "Arşiv reposunun klasörünü seçin "
+                + "(ör. Marmara_Bilgisayar_Muhendisligi_Arsiv). JSON dosyaları .github/json_dosyalari içinde aranır.");
         DirectoryChooser chooser = new DirectoryChooser();
         File secilen = chooser.showDialog(owner);
         return secilen != null ? secilen.toPath() : null;

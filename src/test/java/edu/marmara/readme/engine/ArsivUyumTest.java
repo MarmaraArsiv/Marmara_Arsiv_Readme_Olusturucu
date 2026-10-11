@@ -22,14 +22,16 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Gerçek arşive karşı çalışan testler. Arşivin JSON klasörü verilmezse atlanır:
- * <pre>./mvnw test -Darsiv.json=../Marmara_Bilgisayar_Muhendisligi_Arsiv/json_dosyalari</pre>
+ * <pre>./mvnw test -Darsiv.json=../Marmara_Bilgisayar_Muhendisligi_Arsiv</pre>
  */
 class ArsivUyumTest {
 
+    /** -Darsiv.json: arşiv reposunun kökü ya da JSON klasörü. */
     private static Path jsonKlasoru() {
         String yol = System.getProperty("arsiv.json", "");
-        assumeTrue(!yol.isEmpty() && Files.isDirectory(Path.of(yol)), "arsiv.json verilmedi, test atlandı");
-        return Path.of(yol);
+        Path klasor = yol.isEmpty() ? null : ReadmeGenerator.jsonKlasoruBul(Path.of(yol));
+        assumeTrue(klasor != null, "arsiv.json verilmedi ya da JSON klasörü bulunamadı, test atlandı");
+        return klasor;
     }
 
     /** JSON'dan üretilen README'ler arşivdekilerle birebir aynı olmalı (hiçbir dosya yazılmaz). */
