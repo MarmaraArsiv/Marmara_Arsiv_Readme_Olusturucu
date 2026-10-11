@@ -51,8 +51,6 @@ public final class Sabitler {
             "Bu bölümde reponun hazırlanmasında katkıda bulunan insanlar listelenmiştir. Siz de katkıda bulunmak "
             + "isterseniz bizimle iletişime geçin. Ya da merge request gönderin.";
 
-    public static final String VARSAYILAN_YAZARIN_NOTLARI_BOLUM_ADI = "Yazarın Notları";
-
     public static final String VARSAYILAN_REPO_KULLANIMI_BOLUM_ADI = "Repo Kullanımı";
 
     public static final String LISANSUSTU = "Lisansüstü";

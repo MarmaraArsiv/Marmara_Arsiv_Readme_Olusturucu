@@ -42,14 +42,13 @@ public class MainApp extends Application {
         Button repoKullanimiBtn = buton("Repo Kullanımı Düzenle", "#27AE60", () -> new RepoKullanimiWindow(depo).show());
         Button dersBtn = buton("Ders Ekle/Güncelle", "#2980B9", () -> new DersEkleGuncelleWindow(depo).show());
         Button hocaBtn = buton("Hoca Ekle/Güncelle", "#8E44AD", () -> new HocaEkleGuncelleWindow(depo).show());
-        Button yazarNotlariBtn = buton("Yazarın Notları Ekle/Güncelle", "#F39C12", () -> new YazarNotlariWindow(depo).show());
         Button katkidaBulunanBtn = buton("Katkıda Bulunan Ekle/Güncelle", "#D35400", () -> new KatkidaBulunanWindow(depo).show());
         Button donemBtn = buton("Dönem Ekle/Güncelle", "#16A085", () -> new DonemWindow(depo).show());
         Button konfigurasyonBtn = buton("Konfigürasyon Düzenle", "#9B59B6", () -> new KonfigurasyonWindow(depo).show());
         Button gitBtn = buton("Git İşlemleri", "#2C3E50", () -> new GitIslemleriWindow(depo).show());
 
         VBox root = new VBox(8, versionLabel, depoLabel, girisBtn, repoKullanimiBtn, dersBtn, hocaBtn,
-                yazarNotlariBtn, katkidaBulunanBtn, donemBtn, konfigurasyonBtn, gitBtn);
+                katkidaBulunanBtn, donemBtn, konfigurasyonBtn, gitBtn);
         root.setPadding(new Insets(14));
 
         primaryStage.setScene(new Scene(root, 460, 480));

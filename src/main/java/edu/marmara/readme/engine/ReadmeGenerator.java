@@ -29,7 +29,6 @@ public class ReadmeGenerator {
     public static final String REPO_KULLANIMI_JSON = "repo_kullanimi.json";
     public static final String DERSLER_JSON = "dersler.json";
     public static final String HOCALAR_JSON = "hocalar.json";
-    public static final String YAZARIN_NOTLARI_JSON = "yazarin_notlari.json";
     public static final String KATKIDA_BULUNANLAR_JSON = "katkida_bulunanlar.json";
     public static final String DONEMLER_JSON = "donemler.json";
     public static final String KONFIGURASYON_JSON = "konfigurasyon.json";
@@ -42,7 +41,6 @@ public class ReadmeGenerator {
     private RepoKullanimiBolumu repoKullanimi;
     private DerslerBolumu dersler;
     private HocalarBolumu hocalar;
-    private YazarNotlariBolumu yazarNotlari;
     private KatkidaBulunanlarBolumu katkidaBulunanlar;
     private DonemlerBolumu donemler;
     private Konfigurasyon konfig;
@@ -78,7 +76,6 @@ public class ReadmeGenerator {
         repoKullanimi = JsonUtil.read(jsonYolu(REPO_KULLANIMI_JSON), RepoKullanimiBolumu.class);
         dersler = JsonUtil.read(jsonYolu(DERSLER_JSON), DerslerBolumu.class);
         hocalar = JsonUtil.read(jsonYolu(HOCALAR_JSON), HocalarBolumu.class);
-        yazarNotlari = JsonUtil.read(jsonYolu(YAZARIN_NOTLARI_JSON), YazarNotlariBolumu.class);
         katkidaBulunanlar = JsonUtil.read(jsonYolu(KATKIDA_BULUNANLAR_JSON), KatkidaBulunanlarBolumu.class);
         donemler = JsonUtil.read(jsonYolu(DONEMLER_JSON), DonemlerBolumu.class);
 
@@ -151,10 +148,6 @@ public class ReadmeGenerator {
         if (hocalar != null) {
             log("Hoca bilgileri ekleniyor...");
             new HocalarWriter(dersler).write(writer, hocalar, konfig);
-        }
-        if (yazarNotlari != null) {
-            log("Yazar notları ekleniyor...");
-            new YazarNotlariWriter().write(writer, yazarNotlari);
         }
         if (hocalar != null) {
             log("Hoca kısaltmaları ekleniyor...");
