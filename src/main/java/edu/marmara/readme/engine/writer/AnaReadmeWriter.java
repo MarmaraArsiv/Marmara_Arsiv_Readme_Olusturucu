@@ -90,11 +90,6 @@ public class AnaReadmeWriter {
         if (!giris.sayac.isBlank()) {
             sb.append(giris.sayac.stripTrailing()).append("\n\n");
         }
-        sb.append("<details>\n<summary><b>🗂 İçindekiler</b></summary>\n\n## 🗂 İçindekiler\n\n");
-        for (String bolum : giris.icindekiler) {
-            sb.append("- 🔗 ").append(bolum).append("\n");
-        }
-        sb.append("</details>\n\n");
     }
 
     private void yazRepoKullanimi(StringBuilder sb) {

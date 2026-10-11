@@ -87,7 +87,7 @@ Arşivde `.github/json_dosyalari/` altında:
 | `dersler.json` | Her ders: klasörü (ör. `2-2/Elektronik Devrelere Giriş`), tipi, müfredatı ve notu, yıl yıl dersi yürüten hocalar, derse dair öneriler. Listedeki sıra README'deki sıradır. |
 | `hocalar.json` | Her hoca: kısaltma, ana README'deki grubu, ofis, AVESİS linki, cinsiyet (kart emojisi), verdiği dersler. Grupların sırası ve açıklamaları. |
 | `donemler.json` | Dönemler (başlık, genel tavsiyeler) ve seçmeli havuzları (başlık, açıklama). |
-| `giris.json` | Ana sayfanın başı: başlık, açıklama, geri bildirim paragrafı, Katkıda Bulunun bölümü, sayaç, içindekiler. |
+| `giris.json` | Ana sayfanın başı: başlık, açıklama, geri bildirim paragrafı, Katkıda Bulunun bölümü, sayaç. |
 | `repo_kullanimi.json` | Repo Kullanımı ve Kavramlar bölümleri. |
 | `katkida_bulunanlar.json` | Katkıda bulunanlar (GitHub'daki betik pull request'lerden günceller). |
 | `konfigurasyon.json` | Repo adresi, Google Form linkleri ve soru kimlikleri, müfredat seçenekleri ve eski müfredat notu kuralı, README'lerin yeri (`dokumanlar_repo_yolu`). |

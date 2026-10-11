@@ -5,35 +5,23 @@ import edu.marmara.readme.engine.Sabitler;
 import edu.marmara.readme.engine.model.GirisBolumu;
 import edu.marmara.readme.engine.util.JsonUtil;
 import edu.marmara.readme.engine.util.MetinIslemleri;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-/** Python giris_ekle_guncelle_window.py'nin Java/JavaFX portu. */
+/** Ana README'nin başı: başlık, açıklama, geri bildirim paragrafı, Katkıda Bulunun bölümü ve sayaç. */
 public class GirisWindow {
 
     private final Path girisJsonYolu;
     private GirisBolumu data;
-    private final ObservableList<String> icindekilerModel = FXCollections.observableArrayList();
-    private final UndoManager<String> undoManager = new UndoManager<>();
     private Stage stage;
-    private TextField aramaAlani;
-    private Label sayiLabel;
-    private ListView<String> listView;
 
     public GirisWindow(Path jsonDeposu) {
         this.girisJsonYolu = jsonDeposu.resolve(ReadmeGenerator.GIRIS_JSON);
@@ -82,111 +70,10 @@ public class GirisWindow {
                 "Sayaç HTML'i. Adresteki kullanıcı adını değiştirirsen sayım sıfırdan başlar:",
                 () -> data.sayac, s -> data.sayac = s);
 
-        icindekilerModel.setAll(data.icindekiler);
-        listView = new ListView<>(icindekilerModel);
-        DragReorder.enable(listView, yeniSira -> {
-            data.icindekiler = new ArrayList<>(yeniSira);
-            jsonKaydet();
-        });
-        listView.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 2) {
-                String secili = listView.getSelectionModel().getSelectedItem();
-                if (secili != null) {
-                    icerikDuzenle(secili);
-                }
-            }
-        });
-
-        aramaAlani = new TextField();
-        aramaAlani.setPromptText("İçindekiler ara...");
-        aramaAlani.textProperty().addListener((obs, eski, yeni) -> uygulaFiltre(yeni));
-        sayiLabel = new Label();
-
-        Button ekleBtn = new Button("➕ İçindekiler Maddesi Ekle");
-        ekleBtn.setOnAction(e -> icerikEkle());
-
-        Button silBtn = new Button("Seçili Maddeyi Sil");
-        silBtn.setOnAction(e -> {
-            String secili = listView.getSelectionModel().getSelectedItem();
-            if (secili != null && Dialogs.confirm("Onay", "Bu içerik maddesini silmek istiyor musun?")) {
-                int index = data.icindekiler.indexOf(secili);
-                undoManager.pushDeleted(index, secili);
-                icindekilerModel.remove(secili);
-                data.icindekiler.remove(secili);
-                jsonKaydet();
-                Toast.show(stage, "Madde silindi. (Geri almak için Ctrl+Z)", Toast.Tip.BASARI);
-            }
-        });
-
-        VBox root = new VBox(8, baslikBtn, aciklamaBtn, new HBox(8, geriBildirimBtn, katkidaBulununBtn, sayacBtn),
-                new HBox(8, ekleBtn, silBtn, aramaAlani), sayiLabel,
-                new Label("İçindekiler (çift tıkla: düzenle, sürükle: sırala)"), listView);
+        VBox root = new VBox(8, baslikBtn, aciklamaBtn, geriBildirimBtn, katkidaBulununBtn, sayacBtn);
         root.setPadding(new Insets(10));
-        VBox.setVgrow(listView, Priority.ALWAYS);
-
-        Scene scene = new Scene(root, 560, 540);
-        scene.setOnKeyPressed(e -> {
-            if (e.isControlDown() && e.getCode() == KeyCode.Z) {
-                undoSil();
-            }
-        });
-        stage.setScene(scene);
-        guncelleSayi();
+        stage.setScene(new Scene(root, 520, 240));
         stage.showAndWait();
-    }
-
-    private void guncelleSayi() {
-        sayiLabel.setText("Toplam " + data.icindekiler.size() + " madde");
-    }
-
-    private void uygulaFiltre(String sorgu) {
-        if (sorgu == null || sorgu.isEmpty()) {
-            icindekilerModel.setAll(data.icindekiler);
-            guncelleSayi();
-            return;
-        }
-        String q = sorgu.replace("İ", "i").toLowerCase();
-        List<String> filtreli = data.icindekiler.stream()
-                .filter(s -> s.replace("İ", "i").toLowerCase().contains(q)).toList();
-        icindekilerModel.setAll(filtreli);
-        sayiLabel.setText(filtreli.size() + " madde bulundu");
-    }
-
-    private void undoSil() {
-        var silinen = undoManager.popDeleted();
-        if (silinen == null) {
-            return;
-        }
-        int index = Math.min(silinen.index(), data.icindekiler.size());
-        data.icindekiler.add(index, silinen.item());
-        icindekilerModel.setAll(data.icindekiler);
-        jsonKaydet();
-        guncelleSayi();
-        Toast.show(stage, "Madde geri alındı.", Toast.Tip.BASARI);
-    }
-
-    private void icerikEkle() {
-        Dialogs.textInput("İçerik Başlığı", "Görünecek başlık:", "").ifPresent(baslik ->
-                Dialogs.textInput("İçerik Çapası", "README.md çapası (örn: #-dersler):", "").ifPresent(capa -> {
-                    if (!baslik.isBlank()) {
-                        String madde = "[" + baslik + "](" + capa + ")";
-                        icindekilerModel.add(madde);
-                        data.icindekiler.add(madde);
-                        jsonKaydet();
-                        guncelleSayi();
-                        Toast.show(stage, "Madde eklendi.", Toast.Tip.BASARI);
-                    }
-                }));
-    }
-
-    private void icerikDuzenle(String eski) {
-        Dialogs.textInput("İçerik Düzenle", "Madde (markdown link formatında):", eski).ifPresent(yeni -> {
-            int idx = icindekilerModel.indexOf(eski);
-            icindekilerModel.set(idx, yeni);
-            data.icindekiler.set(idx, yeni);
-            jsonKaydet();
-            Toast.show(stage, "Madde güncellendi.", Toast.Tip.BASARI);
-        });
     }
 
     private void jsonKaydet() {
@@ -195,6 +82,7 @@ public class GirisWindow {
 
     private Button metinButonu(String ad, String aciklama, Supplier<String> al, Consumer<String> yaz) {
         Button b = new Button(ad);
+        b.setMaxWidth(Double.MAX_VALUE);
         b.setOnAction(e -> Dialogs.multilineInput(ad, aciklama, al.get()).ifPresent(yeni -> {
             if (!yeni.equals(al.get())) {
                 yaz.accept(yeni);
