@@ -73,5 +73,11 @@ Arşivde `.github/json_dosyalari/` altında:
 ./mvnw test -Darsiv.json=../Marmara_Bilgisayar_Muhendisligi_Arsiv
 ```
 
-Arşivdeki README'lerin JSON'dan birebir üretildiğini, JSON'ların okunup yazılınca değişmediğini ve
-link/sıralama yardımcılarını denetler. `-Darsiv.json` verilmezse arşive bağlı testler atlanır.
+Denetlenenler:
+
+- Arşivdeki README'ler JSON'dan birebir üretiliyor; JSON'lar okunup yazılınca değişmiyor.
+- Yeni bir ders eklenince ders sayfası, havuz listesi, ana sayfa kartı ve hoca kartı doğru oluşuyor.
+- Bütün pencereler ve düzenleme diyalogları ekransız (Monocle) açılıp hatasız kapanıyor.
+- Link ve sıralama yardımcıları doğru çalışıyor.
+
+`-Darsiv.json` verilmezse arşive bağlı testler atlanır. Testler arşive hiçbir şey yazmaz.

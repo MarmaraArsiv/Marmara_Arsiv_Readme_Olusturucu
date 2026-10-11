@@ -51,6 +51,13 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Arayüz testleri ekransız (headless) çalışsın diye -->
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <version>21.0.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -64,6 +71,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.3.1</version>
+                <configuration>
+                    <!-- Ekransız arayüz testi (Monocle) JavaFX'in iç paketlerine erişir. JavaFX'i JDK'nın
+                         içinde getiren dağıtımlarda gerekli; JavaFX'siz JDK'da yalnızca uyarı verir. -->
+                    <argLine>
+                        --add-exports=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
+                        --add-opens=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
+                        --add-exports=javafx.graphics/com.sun.glass.events=ALL-UNNAMED
+                        --add-exports=javafx.graphics/com.sun.glass.utils=ALL-UNNAMED
+                        --add-exports=javafx.graphics/com.sun.javafx.util=ALL-UNNAMED
+                        --add-exports=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+                        --add-exports=javafx.base/com.sun.javafx.logging=ALL-UNNAMED
+                    </argLine>
+                </configuration>
             </plugin>
             <!-- Run the headless CLI engine: mvn javafx:run / or exec:java -->
             <plugin>
