@@ -78,6 +78,14 @@ Denetlenenler:
 - Arşivdeki README'ler JSON'dan birebir üretiliyor; JSON'lar okunup yazılınca değişmiyor.
 - Yeni bir ders eklenince ders sayfası, havuz listesi, ana sayfa kartı ve hoca kartı doğru oluşuyor.
 - Bütün pencereler ve düzenleme diyalogları ekransız (Monocle) açılıp hatasız kapanıyor.
+- Arayüz bir kullanıcı gibi kullanılıyor (alan doldurma, düğmeye basma, onay kutuları):
+  - ders ekleme (yıl, listeden hoca, not, listede olmayan isim), düzenleme, silme ve Ctrl+Z ile geri alma;
+  - hoca ekleme (kısaltma ve grup önerisi) ve terfi: ünvan değişince grup, derslerdeki ad ve onaylı
+    yorumlar yeni ada taşınıyor;
+  - Readme Güncelle yalnızca değişen dosyaları yazıyor, JSON hatalıysa hiçbir dosyaya dokunmuyor;
+  - push: yerel bir test reposunda boşluklu/Türkçe adlı dosyalar seçilip commit'leniyor, botun arada
+    attığı commit'in üstüne gönderiliyor, işaretlenmeyen değişiklik yerelde kalıyor.
 - Link ve sıralama yardımcıları doğru çalışıyor.
 
-`-Darsiv.json` verilmezse arşive bağlı testler atlanır. Testler arşive hiçbir şey yazmaz.
+`-Darsiv.json` verilmezse arşive bağlı testler atlanır. Testler arşive hiçbir şey yazmaz; hepsi geçici
+kopyalarla çalışır, push testi de GitHub'a değil geçici bir yerel repoya gönderir.

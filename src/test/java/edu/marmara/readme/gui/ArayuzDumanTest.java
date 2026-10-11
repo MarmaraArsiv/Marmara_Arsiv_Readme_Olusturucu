@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
@@ -39,13 +38,7 @@ class ArayuzDumanTest {
 
     @BeforeAll
     static void javafxBaslat() throws InterruptedException {
-        System.setProperty("glass.platform", "Monocle");
-        System.setProperty("monocle.platform", "Headless");
-        System.setProperty("prism.order", "sw");
-        CountDownLatch hazir = new CountDownLatch(1);
-        Platform.startup(hazir::countDown);
-        assertTrue(hazir.await(20, TimeUnit.SECONDS), "JavaFX başlamadı");
-        Platform.setImplicitExit(false);
+        ArayuzRobotu.baslat();
         // Açılan her pencereyi (uyarı kutuları dahil) kısa süre sonra kapat; showAndWait geri dönsün.
         kapatici = Executors.newSingleThreadScheduledExecutor();
         kapatici.scheduleAtFixedRate(() -> Platform.runLater(() -> {
@@ -60,9 +53,11 @@ class ArayuzDumanTest {
     }
 
     @AfterAll
-    static void durdur() {
+    static void durdur() throws InterruptedException {
         if (kapatici != null) {
             kapatici.shutdownNow();
+            kapatici.awaitTermination(5, TimeUnit.SECONDS);
+            ArayuzRobotu.fx(() -> null); // sıradaki kapatma işleri sonraki testlere taşmasın
         }
     }
 
@@ -118,6 +113,7 @@ class ArayuzDumanTest {
         fxIcindeCalistir("Dönemler", () -> new DonemWindow(json).show(), hatalar);
         fxIcindeCalistir("Konfigürasyon", () -> new KonfigurasyonWindow(json).show(), hatalar);
         fxIcindeCalistir("Hoca/Ders Adları", () -> new HocaDersAdlariWindow(json).show(), hatalar);
+        fxIcindeCalistir("Git İşlemleri", () -> new GitIslemleriWindow(json).show(), hatalar);
         fxIcindeCalistir("Ders düzenle (akademisyenli)", () -> new DersDuzenlemeDialog(new Stage(),
                 dersler.dersler.stream().filter(d -> !d.akademisyenler.isEmpty()).findFirst().orElseThrow(),
                 dersler, hocalar, donemler, () -> { }, d -> { }).show(), hatalar);
