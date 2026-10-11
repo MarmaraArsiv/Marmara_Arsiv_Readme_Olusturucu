@@ -1,6 +1,8 @@
 package edu.marmara.readme.engine.writer;
 
 import edu.marmara.readme.engine.Sabitler;
+import edu.marmara.readme.engine.util.TurkceSira;
+import edu.marmara.readme.engine.util.UrlKodla;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -29,6 +31,8 @@ public final class KorunanBloklar {
 
     private final Map<String, String> kokYildiz = new HashMap<>();
     private final Map<String, String> kokGorus = new HashMap<>();
+    // Hoca blokları ünvansız ada göre tutulur: terfi eden hocanın adı güncellenince yorumları kaybolmaz.
+    private final Map<String, String> hocaKartAdi = new HashMap<>();
     private final Map<String, String> hocaGorus = new HashMap<>();
     private final Map<String, List<String>> hocaYorumlari = new HashMap<>();
     private final Map<String, String> donemYildiz = new HashMap<>();
@@ -97,14 +101,16 @@ public final class KorunanBloklar {
                 if (g == null) {
                     continue;
                 }
-                hocaGorus.put(h.group(1), g);
+                String anahtar = TurkceSira.unvansiz(h.group(1));
+                hocaKartAdi.put(anahtar, h.group(1));
+                hocaGorus.put(anahtar, g);
                 List<String> yorumlar = new ArrayList<>();
                 for (String satir : g.split("\n")) {
                     if (satir.startsWith("  - 👤 ")) {
                         yorumlar.add(satir.substring("  - ".length()));
                     }
                 }
-                hocaYorumlari.put(h.group(1), yorumlar);
+                hocaYorumlari.put(anahtar, yorumlar);
             }
         }
         int bas = t.indexOf("<!-- DOLULUK_BASLANGIC -->");
@@ -215,13 +221,17 @@ public final class KorunanBloklar {
         return kokGorus.get(klasor);
     }
 
+    /** Hocanın kartındaki yorum bloğu; ünvanı değişmişse yorum linkindeki ad yeni ada çevrilir. */
     public String hocaGorus(String hoca) {
-        return hocaGorus.get(hoca);
+        String anahtar = TurkceSira.unvansiz(hoca);
+        String g = hocaGorus.get(anahtar);
+        String eskiAd = hocaKartAdi.get(anahtar);
+        return g == null || eskiAd.equals(hoca) ? g : g.replace(UrlKodla.kodla(eskiAd), UrlKodla.kodla(hoca));
     }
 
     /** Hocanın ana README kartındaki onaylı yorum satırları ("👤 **_mahlas_**: …"), en yeni üstte. */
     public List<String> hocaYorumlari(String hoca) {
-        return hocaYorumlari.getOrDefault(hoca, List.of());
+        return hocaYorumlari.getOrDefault(TurkceSira.unvansiz(hoca), List.of());
     }
 
     public String donemYildiz(String donem, String ders) {

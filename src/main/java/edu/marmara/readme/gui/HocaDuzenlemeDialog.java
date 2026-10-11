@@ -85,15 +85,20 @@ public class HocaDuzenlemeDialog {
         kisaltmaAlani.textProperty().addListener((o, eski, yeni) -> kisaltmaElleDegisti = kisaltmaAlani.isFocused());
         if (duzenlenecekHoca == null) {
             adAlani.textProperty().addListener((o, eski, yeni) -> kisaltmaOner());
-            unvanBox.valueProperty().addListener((o, eski, yeni) -> grupOner());
         }
 
         grupBox = new ComboBox<>(FXCollections.observableArrayList(
                 hocalarData.gruplar.stream().map(g -> g.ad).toList()));
         grupBox.setValue(duzenlenecekHoca != null ? h.grup : null);
         if (duzenlenecekHoca == null) {
-            grupOner();
+            grupOner(unvanBox.getValue());
         }
+        // Ünvan değişince (ör. terfi) grup da ünvana göre değişir; elle seçilmiş özel gruba dokunulmaz.
+        unvanBox.valueProperty().addListener((o, eski, yeni) -> {
+            if (grupBox.getValue() == null || grupBox.getValue().equals(varsayilanGrup(eski))) {
+                grupOner(yeni);
+            }
+        });
         ofisAlani = new TextField(h.ofis);
         ofisAlani.setPromptText("ör. T4-106");
         linkAlani = new TextField(h.link);
@@ -164,13 +169,17 @@ public class HocaDuzenlemeDialog {
         kisaltmaAlani.setText(HocaKisaltmaOlustur.oner(tamAd(), mevcut));
     }
 
-    /** Yeni hocada ünvana göre varsayılan grup. */
-    private void grupOner() {
-        String u = unvanBox.getValue();
-        String grup = u == null ? null : u.startsWith("Prof.") ? "Profesörler" : u.startsWith("Doç.") ? "Doçentler"
-                : u.equals("Dr. Öğretim Üyesi") ? "Doktor Öğretim Üyeleri"
-                : u.startsWith("Arş. Gör.") ? "Araştırma Görevlileri" : "Öğretim Görevlileri";
-        if (grupBox != null && hocalarData.gruplar.stream().anyMatch(g -> g.ad.equals(grup))) {
+    /** Ünvanın ana README'deki varsayılan grubu. */
+    static String varsayilanGrup(String unvan) {
+        return unvan == null ? null : unvan.startsWith("Prof.") ? "Profesörler"
+                : unvan.startsWith("Doç.") ? "Doçentler"
+                : unvan.equals("Dr. Öğretim Üyesi") ? "Doktor Öğretim Üyeleri"
+                : unvan.startsWith("Arş. Gör.") ? "Araştırma Görevlileri" : "Öğretim Görevlileri";
+    }
+
+    private void grupOner(String unvan) {
+        String grup = varsayilanGrup(unvan);
+        if (hocalarData.gruplar.stream().anyMatch(g -> g.ad.equals(grup))) {
             grupBox.setValue(grup);
         }
     }
