@@ -21,7 +21,7 @@ sudo apt install openjdk-21-jdk git
 
 # Araç ve arşiv aynı klasörde, yan yana dursun:
 mkdir -p ~/marmara && cd ~/marmara
-git clone git@github.com:MarmaraArsiv/Marmara_Bilgisayar_Readme_Olusturucu.git
+git clone git@github.com:MarmaraArsiv/Marmara_Arsiv_Readme_Olusturucu.git
 git clone git@github.com:MarmaraArsiv/tek_bilgisayar.git
 ```
 
@@ -41,7 +41,7 @@ cat ~/.ssh/id_ed25519.pub        # çıkan satırı GitHub → Settings → SSH 
 3. **Repoları indir:** Başlat menüsünden **Git Bash**'i aç ve şunları yaz (araç ve arşiv yan yana dursun):
    ```bash
    mkdir -p ~/marmara && cd ~/marmara
-   git clone https://github.com/MarmaraArsiv/Marmara_Bilgisayar_Readme_Olusturucu.git
+   git clone https://github.com/MarmaraArsiv/Marmara_Arsiv_Readme_Olusturucu.git
    git clone https://github.com/MarmaraArsiv/tek_bilgisayar.git
    ```
    Klasörler `C:\Users\<kullanıcı adın>\marmara` altına iner.
@@ -54,7 +54,7 @@ cat ~/.ssh/id_ed25519.pub        # çıkan satırı GitHub → Settings → SSH 
 
 | | 🐧 Ubuntu / Linux | 🪟 Windows |
 |---|---|---|
-| Arayüz | Terminalde: `~/marmara/Marmara_Bilgisayar_Readme_Olusturucu/arayuz.sh` | Klasörde `arayuz.bat`'a **çift tıkla** |
+| Arayüz | Terminalde: `~/marmara/Marmara_Arsiv_Readme_Olusturucu/arayuz.sh` | Klasörde `arayuz.bat`'a **çift tıkla** |
 | Aracı güncelleme | Araç klasöründe `git pull` | Git Bash'te araç klasöründe `git pull` |
 
 - İlk açılış internetten Maven'i ve kütüphaneleri indirdiği için birkaç dakika sürer; sonrakiler hızlıdır.
