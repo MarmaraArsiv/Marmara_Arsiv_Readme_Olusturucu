@@ -1,0 +1,5 @@
+# Windows betikleri CRLF ile çıkar (GitHub'dan ZIP indirince de); Unix betikleri LF.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.sh    text eol=lf
+mvnw    text eol=lf

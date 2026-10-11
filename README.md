@@ -9,17 +9,62 @@ Araç bütün bölümler için ortaktır: bölüme özel her şey (başlık, dö
 Google Form linkleri) arşivin kendi `.github/json_dosyalari/` klasöründedir. Yeni bir bölümün arşivi araçtan
 tek pencereyle kurulur.
 
-## Gereksinimler
+## Kurulum (bir kez)
 
-- **JDK 21** — Ubuntu'da `sudo apt install openjdk-21-jdk`. Maven kurmaya gerek yok, `mvnw` kendisi indirir.
-- Arşiv repoları aracın yanındaki klasörlerde olursa araç onları kendisi bulur; değilse ilk açılışta sorar.
-  Son açılan arşivler hatırlanır.
+Gerekenler: **JDK 21** (Java), **Git** ve bu araçla düzenleyeceğin **arşiv reposu**. Maven ya da başka bir şey
+kurmaya gerek yok; araç ilk açılışta gerekenleri kendisi indirir.
 
-## Arayüz
+### 🐧 Ubuntu / Linux
 
 ```bash
-./arayuz.sh          # Windows: arayuz.bat
+sudo apt install openjdk-21-jdk git
+
+# Araç ve arşiv aynı klasörde, yan yana dursun:
+mkdir -p ~/marmara && cd ~/marmara
+git clone git@github.com:MarmaraArsiv/Marmara_Bilgisayar_Readme_Olusturucu.git
+git clone git@github.com:MarmaraArsiv/tek_bilgisayar.git
 ```
+
+`git@github.com:` adresleri GitHub'a SSH anahtarıyla bağlanır. Anahtarın yoksa bir kez oluşturup GitHub'a ekle:
+
+```bash
+ssh-keygen -t ed25519            # sorulara Enter ile geç
+cat ~/.ssh/id_ed25519.pub        # çıkan satırı GitHub → Settings → SSH and GPG keys → New SSH key'e yapıştır
+```
+
+### 🪟 Windows
+
+1. **Java:** [adoptium.net](https://adoptium.net) → **Temurin 21 (LTS)** → Windows, x64, `.msi` indir ve kur.
+   Kurulumda **"Set JAVA_HOME variable"** seçeneğini aç (varsayılan olarak kapalıdır).
+2. **Git:** [git-scm.com/download/win](https://git-scm.com/download/win) → indir, varsayılan ayarlarla kur.
+   İlk pushta tarayıcıda GitHub girişi açılır, şifre ya da token yazman gerekmez.
+3. **Repoları indir:** Başlat menüsünden **Git Bash**'i aç ve şunları yaz (araç ve arşiv yan yana dursun):
+   ```bash
+   mkdir -p ~/marmara && cd ~/marmara
+   git clone https://github.com/MarmaraArsiv/Marmara_Bilgisayar_Readme_Olusturucu.git
+   git clone https://github.com/MarmaraArsiv/tek_bilgisayar.git
+   ```
+   Klasörler `C:\Users\<kullanıcı adın>\marmara` altına iner.
+
+> ZIP olarak indirmek yerine `git clone` kullan: araç değişiklikleri GitHub'a gönderirken arşivin git ile
+> indirilmiş olmasına ihtiyaç duyar. Arşive doğrudan pushlamak için
+> [MarmaraArsiv](https://github.com/MarmaraArsiv)'de yazma yetkin olmalı.
+
+## Aracı açma
+
+| | 🐧 Ubuntu / Linux | 🪟 Windows |
+|---|---|---|
+| Arayüz | Terminalde: `~/marmara/Marmara_Bilgisayar_Readme_Olusturucu/arayuz.sh` | Klasörde `arayuz.bat`'a **çift tıkla** |
+| Aracı güncelleme | Araç klasöründe `git pull` | Git Bash'te araç klasöründe `git pull` |
+
+- İlk açılış internetten Maven'i ve kütüphaneleri indirdiği için birkaç dakika sürer; sonrakiler hızlıdır.
+  Araç güncellendiyse bir sonraki açılışta kendiliğinden yeniden derlenir.
+- Windows'ta arkada siyah bir komut penceresi açık kalır. Onu kapatırsan araç da kapanır.
+- Windows "Windows kişisel bilgisayarınızı korudu" derse **Ek bilgi → Yine de çalıştır**.
+- Java bulunamazsa pencere ne yapman gerektiğini yazar (Windows'ta yukarıdaki 1. adım).
+- Araç, yanındaki klasörlerde bulduğu arşivi açar. Bulamazsa klasörü sorar; son açılan arşivleri hatırlar.
+
+## Kullanım
 
 Önerilen sıra:
 
@@ -60,7 +105,10 @@ söyler). Bir betik iyileştirilince:
 
 Testler Bilgisayar arşivindeki betiklerin şablonla aynı olduğunu da denetler.
 
-## Komut satırı
+## Komut satırı (isteğe bağlı)
+
+Arayüzün yaptıklarının çoğu komut satırından da yapılabilir. Linux'ta `readme_olustur.sh`, Windows'ta
+`readme_olustur.bat` (Komut İstemi'nde, araç klasöründe):
 
 ```bash
 ./readme_olustur.sh                             # README'leri JSON'dan üretir (yandaki tek arşiv)
@@ -73,6 +121,9 @@ Testler Bilgisayar arşivindeki betiklerin şablonla aynı olduğunu da denetler
     --havuz "Mesleki Seçmeli" --havuz "Üniversite Seçmeli" --drive "Elektrik-Teknoloji"
 ./build.sh                                      # yalnızca derler: target/marmara-readme-araci.jar
 ```
+
+Windows'ta aynı komutlar `readme_olustur.bat ..\tek_bilgisayar --kontrol` biçimindedir (`--yeni-arsiv` için
+arayüzdeki **🆕 Yeni Bölüm Arşivi Oluştur** düğmesini kullan).
 
 `--kontrol` ve `--altyapi-kontrol` fark varsa listeleyip 1 koduyla çıkar; JSON'da hata varsa 2 koduyla.
 `--yeni-arsiv`'de `--sinif` (varsayılan 4) ve tekrarlanabilen `--mufredat` da verilebilir; `--mufredat`
@@ -139,3 +190,12 @@ Denetlenenler:
 
 `-Darsiv.json` verilmezse arşive bağlı testler atlanır. Testler arşive hiçbir şey yazmaz; hepsi geçici
 kopyalarla çalışır, push testi de GitHub'a değil geçici bir yerel repoya gönderir.
+
+## Sorun giderme
+
+| Belirti | Çözüm |
+|---|---|
+| "JDK 21 bulunamadı" | JDK 21'i yukarıdaki gibi kur. Başka bir klasöre kurduysan `JAVA_HOME`'u o klasöre ayarla: Linux'ta `export JAVA_HOME=/jdk/klasörü`; Windows'ta **Başlat → "ortam değişkenleri" → Ortam Değişkenleri → Yeni** (ad `JAVA_HOME`, değer JDK klasörü, ör. `C:\Program Files\Eclipse Adoptium\jdk-21…`). |
+| Derleme internet hatasıyla duruyor | İlk açılışta internet gerekir; bağlantıyı kontrol edip tekrar aç. |
+| Push "Permission denied" / "403" veriyor | GitHub'da MarmaraArsiv'e yazma yetkin yok ya da giriş yapılmadı. Linux'ta SSH anahtarını [GitHub'a ekle](https://github.com/settings/keys) (Kurulum › Ubuntu); Windows'ta açılan tarayıcı penceresinden GitHub'a giriş yap. |
+| Araç arşivi bulamıyor | Arşiv klasörünü sorduğunda seç ya da aracı arşivle aynı klasöre koy (`marmara/` altında yan yana). |
