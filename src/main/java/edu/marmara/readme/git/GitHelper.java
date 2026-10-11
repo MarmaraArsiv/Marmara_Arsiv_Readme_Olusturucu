@@ -91,6 +91,24 @@ public final class GitHelper {
         return calistir(repoPath, "pull", "--rebase", "--autostash");
     }
 
+    /**
+     * Çakışmada yerel commit'in satırları geçerli olur (rebase'de "theirs" yeniden uygulanan yerel commit'tir).
+     * Çakışmalar botların yazdığı yıldız/yorum bloklarında çıkar; botlar onları her çalışmada yeniden yazar.
+     */
+    public static SonucCikti gitPullRebaseYerelOncelikli(Path repoPath) {
+        return calistir(repoPath, "pull", "--rebase", "--autostash", "-X", "theirs");
+    }
+
+    /** GitHub'a henüz gönderilmemiş yerel commit sayısı (izlenen dal yoksa 0). */
+    public static int gonderilmemisCommitSayisi(Path repoPath) {
+        SonucCikti r = calistir(repoPath, "rev-list", "--count", "@{u}..HEAD");
+        try {
+            return r.basarili() ? Integer.parseInt(r.stdout().strip()) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
     public static SonucCikti gitRebaseAbort(Path repoPath) {
         return calistir(repoPath, "rebase", "--abort");
     }

@@ -85,12 +85,51 @@ public class GitIslemleriWindow {
     private record DegisenDosya(String durumKodu, String dosyaAdi) {
     }
 
+    /**
+     * GitHub'daki yeni commit'leri (botlarınkiler dahil) alıp yerel commit'leri üstüne dizer ve gönderir.
+     * Hata olursa kullanıcıya gösterilecek mesajı, başarılıysa null döner. Commit'ler hiçbir durumda kaybolmaz.
+     */
+    static String cekVeGonder(Path repoPath) {
+        var pull = GitHelper.gitPullRebase(repoPath);
+        if (!pull.basarili()) {
+            // Çoğunlukla botun aynı satırlara yazdığı yorum/yıldız bloğuyla çakışma: senin sürümün geçerli olur,
+            // bot o blokları birkaç dakika içinde form cevaplarından yeniden yazar.
+            GitHelper.gitRebaseAbort(repoPath);
+            pull = GitHelper.gitPullRebaseYerelOncelikli(repoPath);
+            if (!pull.basarili()) {
+                GitHelper.gitRebaseAbort(repoPath);
+                return "GitHub'dan çekilemedi, push yapılmadı. Commit'in yerelde duruyor; internet bağlantını "
+                        + "kontrol edip tekrar Pushla'ya bas.\n\n" + pull.stderr();
+            }
+        }
+        var push = GitHelper.gitPush(repoPath);
+        return push.basarili() ? null : "Push başarısız. Commit'in yerelde duruyor; tekrar Pushla'ya basabilirsin.\n\n"
+                + push.stderr();
+    }
+
     private void pushDialogAc(Path repoPath) {
+        List<String> durum = GitHelper.gitStatus(repoPath);
+        if (durum.isEmpty()) {
+            // Önceki push yarıda kaldıysa (ör. internet yoktu) commit yerelde bekliyor olabilir.
+            int bekleyen = GitHelper.gonderilmemisCommitSayisi(repoPath);
+            if (bekleyen == 0) {
+                Dialogs.info("Bilgi", "Gönderilecek değişiklik yok.");
+            } else if (Dialogs.confirm("Gönderilmemiş Commit", "Yerelde GitHub'a gönderilmemiş " + bekleyen
+                    + " commit var. Şimdi gönderilsin mi?")) {
+                String hata = cekVeGonder(repoPath);
+                if (hata == null) {
+                    Dialogs.info("Tamam", "Commit'ler GitHub'a gönderildi.");
+                } else {
+                    Dialogs.error("Hata", hata);
+                }
+            }
+            return;
+        }
+
         Stage dlg = new Stage();
         dlg.initModality(Modality.APPLICATION_MODAL);
         dlg.setTitle("Değişiklikleri Pushlama");
 
-        List<String> durum = GitHelper.gitStatus(repoPath);
         ListView<CheckBox> dosyaListView = new ListView<>();
         for (String satir : durum) {
             String kod = satir.substring(0, 2);
@@ -143,19 +182,12 @@ public class GitIslemleriWindow {
                 return;
             }
             // GitHub'daki botlar sık commit atar; önce onları alıp kendi commit'ini üstüne diz.
-            var pull = GitHelper.gitPullRebase(repoPath);
-            if (!pull.basarili()) {
-                GitHelper.gitRebaseAbort(repoPath);
-                Dialogs.error("Hata", "GitHub'daki yeni değişikliklerle çakıştı, push yapılmadı. Commit'in yerelde "
-                        + "duruyor. GitHub'dan Çek'i deneyip Readme Güncelle'yi tekrar çalıştır.\n\n" + pull.stderr());
-                return;
-            }
-            var push = GitHelper.gitPush(repoPath);
-            if (push.basarili()) {
+            String hata = cekVeGonder(repoPath);
+            if (hata == null) {
                 Toast.show(dlg, "Değişiklikler push edildi.", Toast.Tip.BASARI);
                 dlg.close();
             } else {
-                Dialogs.error("Hata", "Push başarısız: " + push.stderr());
+                Dialogs.error("Hata", hata);
             }
         });
 

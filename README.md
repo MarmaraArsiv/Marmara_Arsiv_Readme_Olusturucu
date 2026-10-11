@@ -23,6 +23,9 @@ Ders, hoca ya da dönem bilgisi değiştiğinde README'leri elle düzenlemek yer
 2. **Ders / Hoca / Dönem / Giriş** pencerelerinden düzenle. Değişiklikler JSON dosyalarına kaydedilir.
 3. **Git İşlemleri › 📝 Readme Güncelle** — README'leri JSON'dan üretir, yalnızca değişenleri yazar.
 4. **⬆️ Değişiklikleri GitHub'a Pushla** — değişen dosyaları ve farklarını gör, commit mesajını yaz.
+   Araç önce GitHub'daki bot commit'lerini alır, seninkini üstüne koyup gönderir. Bot aynı satırları
+   değiştirmişse senin sürümün geçerli olur; botlar yıldız/yorum bloklarını birkaç dakika içinde yeniden
+   yazar. Push yarıda kalırsa (ör. internet yoksa) commit kaybolmaz, tekrar Pushla'ya basman yeterli.
 
 ## Komut satırı
 
@@ -84,7 +87,8 @@ Denetlenenler:
     yorumlar yeni ada taşınıyor;
   - Readme Güncelle yalnızca değişen dosyaları yazıyor, JSON hatalıysa hiçbir dosyaya dokunmuyor;
   - push: yerel bir test reposunda boşluklu/Türkçe adlı dosyalar seçilip commit'leniyor, botun arada
-    attığı commit'in üstüne gönderiliyor, işaretlenmeyen değişiklik yerelde kalıyor.
+    attığı commit'in üstüne gönderiliyor (bot aynı satırı değiştirdiyse kullanıcının sürümü geçerli),
+    işaretlenmeyen değişiklik yerelde kalıyor; yarıda kalmış bir push sonradan tamamlanabiliyor.
 - Link ve sıralama yardımcıları doğru çalışıyor.
 
 `-Darsiv.json` verilmezse arşive bağlı testler atlanır. Testler arşive hiçbir şey yazmaz; hepsi geçici

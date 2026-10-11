@@ -399,7 +399,8 @@ class ArayuzAkisTest {
 
     @Test
     void pushSeciliDosyalariBotCommitlerininUstuneGonderir(@TempDir Path gecici) throws Exception {
-        // Yerel "GitHub": çıplak repo; kullanıcının kopyası ve arada commit atan bir bot kopyası.
+        // Yerel "GitHub": çıplak repo; kullanıcının kopyası ve arada commit atan bir bot kopyası. Bot, kullanıcının
+        // da değiştirdiği satırı değiştirir (çakışma): kullanıcının sürümü geçerli olmalı.
         Path is = gecici.resolve("is");
         Files.createDirectories(is);
         git(is, "init", "-q", "-b", "main");
@@ -427,6 +428,7 @@ class ArayuzAkisTest {
         git(bot, "config", "user.email", "bot@example.com");
         git(bot, "config", "commit.gpgsign", "false");
         yaz(bot.resolve("2-1/Bot Dersi/README.md"), "bot\n");
+        yaz(bot.resolve("1-1/Fizik 1/README.md"), "fizik (bot)\n");
         git(bot, "add", "-A");
         git(bot, "commit", "-q", "-m", "README otomatik güncellendi");
         git(bot, "push", "-q");
@@ -464,5 +466,18 @@ class ArayuzAkisTest {
         assertEquals("ana (commit'lenmeyecek)\n", Files.readString(is.resolve("README.md")),
                 "işaretlenmeyen değişiklik yerelde kalmalı");
         assertEquals("bot\n", Files.readString(is.resolve("2-1/Bot Dersi/README.md")), "botun commit'i yerele gelmeli");
+
+        // Yarıda kalmış push: commit yerelde, değişen dosya yok → Pushla gönderilmemiş commit'i gönderir.
+        git(is, "checkout", "-q", "--", "README.md");
+        yaz(is.resolve("2-2/Not/README.md"), "not\n");
+        git(is, "add", "-A");
+        git(is, "commit", "-q", "-m", "yerelde kalan commit");
+        CountDownLatch kapandi2 = arkaPlanda(() -> new GitIslemleriWindow(json).show());
+        Window w2 = pencere("Git İşlemleri");
+        bas(w2, "⬆️ Değişiklikleri GitHub'a Pushla");
+        diyalogDugmesi(pencere("Gönderilmemiş Commit"), ButtonType.YES);
+        diyalogDugmesi(pencere("Tamam"), ButtonType.OK);
+        kapat(w2, kapandi2);
+        assertEquals("yerelde kalan commit\n", git(uzak, "log", "-1", "--format=%s", "main"));
     }
 }
