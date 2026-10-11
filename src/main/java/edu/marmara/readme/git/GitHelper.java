@@ -37,15 +37,26 @@ public final class GitHelper {
         }
     }
 
-    public static void setGitQuotepathOff(Path repoPath) {
-        calistir(repoPath, "config", "core.quotepath", "off");
-    }
-
-    /** git status --porcelain çıktısını satır satır döner (boş satırlar dahil, Python ile aynı split davranışı). */
+    /**
+     * Değişen dosyalar, her biri "XY yol" biçiminde (XY: git durum kodu). -z ile okunur: boşluklu ya da
+     * Türkçe karakterli yollar ("1-1/Türkçe 1/README.md") tırnaksız, olduğu gibi gelir ve git add'e
+     * doğrudan verilebilir. Yeni klasörlerin içindeki dosyalar tek tek listelenir.
+     */
     public static List<String> gitStatus(Path repoPath) {
-        setGitQuotepathOff(repoPath);
-        SonucCikti r = calistir(repoPath, "status", "--porcelain");
-        return List.of(r.stdout().split("\n", -1));
+        SonucCikti r = calistir(repoPath, "status", "--porcelain", "-z", "--untracked-files=all");
+        List<String> satirlar = new ArrayList<>();
+        String[] parcalar = r.stdout().split("\0");
+        for (int i = 0; i < parcalar.length; i++) {
+            String p = parcalar[i];
+            if (p.length() < 4) {
+                continue;
+            }
+            satirlar.add(p);
+            if (p.charAt(0) == 'R' || p.charAt(0) == 'C') {
+                i++; // yeniden adlandırmada ardından eski yol gelir
+            }
+        }
+        return satirlar;
     }
 
     public static SonucCikti gitAdd(Path repoPath, String filePath) {
@@ -72,9 +83,12 @@ public final class GitHelper {
         return calistir(repoPath, "push");
     }
 
-    /** GitHub'daki yeni commit'leri alır, yerel commit'leri üstüne dizer (yerel commit'ler kaybolmaz). */
+    /**
+     * GitHub'daki yeni commit'leri alır, yerel commit'leri üstüne dizer (yerel commit'ler kaybolmaz).
+     * Commit'e alınmamış değişiklikler geçici olarak kenara konup geri getirilir.
+     */
     public static SonucCikti gitPullRebase(Path repoPath) {
-        return calistir(repoPath, "pull", "--rebase");
+        return calistir(repoPath, "pull", "--rebase", "--autostash");
     }
 
     public static SonucCikti gitRebaseAbort(Path repoPath) {

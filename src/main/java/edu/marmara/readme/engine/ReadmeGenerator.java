@@ -106,6 +106,13 @@ public class ReadmeGenerator {
         return veri;
     }
 
+    /** konfigurasyon.json'daki dokumanlar_repo_yolu'na göre arşiv reposunun kökü (dosyaya bir şey yazmaz). */
+    public static Path repoKokuBul(Path jsonDeposu) {
+        Konfigurasyon k = JsonUtil.read(jsonDeposu.resolve(KONFIGURASYON_JSON), Konfigurasyon.class);
+        return jsonDeposu.resolve(k != null ? k.dokumanlar_repo_yolu : new Konfigurasyon().dokumanlar_repo_yolu)
+                .toAbsolutePath().normalize();
+    }
+
     /** Tüm README'lerin olması gereken içerikleri: repo köküne göre yol → içerik. Diske bir şey yazmaz. */
     public Map<Path, String> uret() {
         log("Veriler yükleniyor...");

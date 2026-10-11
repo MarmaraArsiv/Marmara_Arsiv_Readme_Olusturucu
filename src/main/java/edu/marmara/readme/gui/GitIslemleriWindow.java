@@ -15,11 +15,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Python git_islemleri_window.py'nin Java/JavaFX portu.
- *
- * Kapsam notu: Google Form güncelleme ve rutin kontrol, Marmara için henüz
- * gerçek bir anket formu oluşturulmadığından (Faz 2 kapsamında) burada devre
- * dışı — ileride googleform modülü form linkleriyle bağlanınca etkinleştirilecek.
+ * Arşiv reposu için git işlemleri: GitHub'dan çek, README'leri JSON'dan üret, değişiklikleri seçip
+ * commit'le ve pushla. Form cevapları (yıldızlar, onaylı yorumlar) GitHub'da otomatik işlenir.
  */
 public class GitIslemleriWindow {
 
@@ -30,7 +27,7 @@ public class GitIslemleriWindow {
     }
 
     public void show() {
-        Path dokumanlarRepoYolu = AppConfig.dokumanlarRepoYolu();
+        Path dokumanlarRepoYolu = ReadmeGenerator.repoKokuBul(jsonDeposu);
 
         Stage stage = new Stage();
         stage.setTitle("Git İşlemleri");
@@ -54,8 +51,8 @@ public class GitIslemleriWindow {
 
         Button cekBtn = new Button("⬇️ Dosya Değişikliklerini GitHub'dan Çek");
         cekBtn.setOnAction(e -> {
-            List<String> durum = GitHelper.gitStatus(dokumanlarRepoYolu);
-            boolean temiz = durum.stream().allMatch(String::isBlank);
+            // Takip edilmeyen yeni dosyalar çekmeye engel değil; değiştirilmiş dosyalar önce pushlanmalı.
+            boolean temiz = GitHelper.gitStatus(dokumanlarRepoYolu).stream().allMatch(s -> s.startsWith("??"));
             if (!temiz) {
                 Dialogs.error("Hata", "Yerel değişiklikler var, önce bunları pushlayın veya geri alın.");
                 return;
@@ -71,7 +68,7 @@ public class GitIslemleriWindow {
         Button durumBtn = new Button("📋 Değişiklikleri Göster");
         durumBtn.setOnAction(e -> {
             List<String> durum = GitHelper.gitStatus(dokumanlarRepoYolu);
-            cikti.setText(String.join("\n", durum));
+            cikti.setText(durum.isEmpty() ? "Değişiklik yok." : String.join("\n", durum));
         });
 
         Button hocaDersAdlariBtn = new Button("👥 Hoca/Ders Adlarını Al");
@@ -96,11 +93,8 @@ public class GitIslemleriWindow {
         List<String> durum = GitHelper.gitStatus(repoPath);
         ListView<CheckBox> dosyaListView = new ListView<>();
         for (String satir : durum) {
-            if (satir.isBlank()) {
-                continue;
-            }
-            String kod = satir.length() >= 2 ? satir.substring(0, 2) : "??";
-            String dosyaAdi = satir.length() > 3 ? satir.substring(3) : satir;
+            String kod = satir.substring(0, 2);
+            String dosyaAdi = satir.substring(3);
             CheckBox cb = new CheckBox(kod + "  " + dosyaAdi);
             cb.setSelected(true);
             cb.setUserData(new DegisenDosya(kod, dosyaAdi));

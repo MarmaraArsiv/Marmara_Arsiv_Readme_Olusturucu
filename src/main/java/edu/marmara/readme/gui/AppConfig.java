@@ -1,9 +1,5 @@
 package edu.marmara.readme.gui;
 
-import edu.marmara.readme.engine.ReadmeGenerator;
-import edu.marmara.readme.engine.config.KonfigurasyonJsonKontrol;
-import edu.marmara.readme.engine.model.Konfigurasyon;
-
 import java.nio.file.Path;
 import java.util.prefs.Preferences;
 
@@ -30,15 +26,5 @@ public final class AppConfig {
 
     public static void jsonDeposunuAyarla(Path yol) {
         PREFS.put(PREF_KEY, yol.toAbsolutePath().toString());
-    }
-
-    public static Konfigurasyon konfigurasyonuYukle() {
-        Path konfPath = jsonDeposu().resolve(ReadmeGenerator.KONFIGURASYON_JSON);
-        return KonfigurasyonJsonKontrol.guncelle(konfPath, jsonDeposu());
-    }
-
-    public static Path dokumanlarRepoYolu() {
-        Konfigurasyon k = konfigurasyonuYukle();
-        return jsonDeposu().resolve(k.dokumanlar_repo_yolu).normalize();
     }
 }
