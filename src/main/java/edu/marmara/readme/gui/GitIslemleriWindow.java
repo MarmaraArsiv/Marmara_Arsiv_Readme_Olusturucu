@@ -60,9 +60,9 @@ public class GitIslemleriWindow {
                 Dialogs.error("Hata", "Yerel değişiklikler var, önce bunları pushlayın veya geri alın.");
                 return;
             }
-            cikti.appendText("Fetch/pull deneniyor...\n");
-            var sonuc = runFetchReset(dokumanlarRepoYolu);
-            cikti.appendText(sonuc + "\n");
+            cikti.appendText("GitHub'dan çekiliyor...\n");
+            var sonuc = GitHelper.gitPullRebase(dokumanlarRepoYolu);
+            cikti.appendText(sonuc.basarili() ? "Başarıyla güncellendi.\n" : "Hata: " + sonuc.stderr() + "\n");
         });
 
         Button pushBtn = new Button("⬆️ Değişiklikleri GitHub'a Pushla");
@@ -77,31 +77,12 @@ public class GitIslemleriWindow {
         Button hocaDersAdlariBtn = new Button("👥 Hoca/Ders Adlarını Al");
         hocaDersAdlariBtn.setOnAction(e -> new HocaDersAdlariWindow(jsonDeposu).show());
 
-        Button formGuncelleBtn = new Button("✍️ Google Form Güncelle (henüz yapılandırılmadı)");
-        formGuncelleBtn.setDisable(true);
-        formGuncelleBtn.setTooltip(new Tooltip("Marmara anketleri henüz oluşturulmadı — Faz 2'de etkinleşecek."));
-
-        Button rutinBtn = new Button("🔁 Rutin Kontrol Başlat (henüz yapılandırılmadı)");
-        rutinBtn.setDisable(true);
-        rutinBtn.setTooltip(new Tooltip("Marmara anketleri henüz oluşturulmadı — Faz 2'de etkinleşecek."));
-
-        VBox root = new VBox(8, formGuncelleBtn, readmeGuncelleBtn, rutinBtn, cekBtn, durumBtn,
-                hocaDersAdlariBtn, pushBtn, new Label("Çıktı:"), cikti);
+        // Form cevapları (yıldızlar, onaylı yorumlar) GitHub'da otomatik işlenir; burada ayrı bir düğme gerekmez.
+        VBox root = new VBox(8, new Label("Sıra: GitHub'dan çek → düzenle → Readme Güncelle → değişiklikleri pushla"),
+                cekBtn, readmeGuncelleBtn, durumBtn, hocaDersAdlariBtn, pushBtn, new Label("Çıktı:"), cikti);
         root.setPadding(new Insets(10));
         stage.setScene(new Scene(root, 640, 600));
         stage.showAndWait();
-    }
-
-    private String runFetchReset(Path repoPath) {
-        try {
-            Process fetch = new ProcessBuilder("git", "-C", repoPath.toString(), "fetch", "--all").start();
-            fetch.waitFor();
-            Process reset = new ProcessBuilder("git", "-C", repoPath.toString(), "reset", "--hard", "origin/main").start();
-            int exit = reset.waitFor();
-            return exit == 0 ? "Başarıyla güncellendi." : "Hata oluştu (exit=" + exit + ").";
-        } catch (Exception e) {
-            return "Hata: " + e.getMessage();
-        }
     }
 
     private record DegisenDosya(String durumKodu, String dosyaAdi) {
@@ -165,6 +146,14 @@ public class GitIslemleriWindow {
             var commit = GitHelper.gitCommit(repoPath, commitMesaji.getText());
             if (!commit.basarili() && !commit.stderr().isBlank()) {
                 Dialogs.error("Hata", "Commit başarısız: " + commit.stderr());
+                return;
+            }
+            // GitHub'daki botlar sık commit atar; önce onları alıp kendi commit'ini üstüne diz.
+            var pull = GitHelper.gitPullRebase(repoPath);
+            if (!pull.basarili()) {
+                GitHelper.gitRebaseAbort(repoPath);
+                Dialogs.error("Hata", "GitHub'daki yeni değişikliklerle çakıştı, push yapılmadı. Commit'in yerelde "
+                        + "duruyor. GitHub'dan Çek'i deneyip Readme Güncelle'yi tekrar çalıştır.\n\n" + pull.stderr());
                 return;
             }
             var push = GitHelper.gitPush(repoPath);

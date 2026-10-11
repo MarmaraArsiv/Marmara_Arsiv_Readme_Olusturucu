@@ -20,6 +20,8 @@ import javafx.stage.Stage;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /** Python giris_ekle_guncelle_window.py'nin Java/JavaFX portu. */
 public class GirisWindow {
@@ -70,6 +72,16 @@ public class GirisWindow {
             Toast.show(stage, "Açıklama güncellendi.", Toast.Tip.BASARI);
         }));
 
+        Button geriBildirimBtn = metinButonu("Geri bildirim paragrafı",
+                "\"Geri Bildirimde Bulunun\" başlığının altındaki paragraf (form linkleri konfigürasyondan gelir):",
+                () -> data.geri_bildirim_aciklamasi, s -> data.geri_bildirim_aciklamasi = s);
+        Button katkidaBulununBtn = metinButonu("Katkıda Bulunun bölümü",
+                "\"## 🤝 Katkıda Bulunun\" bölümünün tamamı, Video Rehberler dahil (markdown):",
+                () -> data.katkida_bulunun, s -> data.katkida_bulunun = s);
+        Button sayacBtn = metinButonu("Görüntülenme sayacı",
+                "Sayaç HTML'i. Adresteki kullanıcı adını değiştirirsen sayım sıfırdan başlar:",
+                () -> data.sayac, s -> data.sayac = s);
+
         icindekilerModel.setAll(data.icindekiler);
         listView = new ListView<>(icindekilerModel);
         DragReorder.enable(listView, yeniSira -> {
@@ -106,7 +118,8 @@ public class GirisWindow {
             }
         });
 
-        VBox root = new VBox(8, baslikBtn, aciklamaBtn, new HBox(8, ekleBtn, silBtn, aramaAlani), sayiLabel,
+        VBox root = new VBox(8, baslikBtn, aciklamaBtn, new HBox(8, geriBildirimBtn, katkidaBulununBtn, sayacBtn),
+                new HBox(8, ekleBtn, silBtn, aramaAlani), sayiLabel,
                 new Label("İçindekiler (çift tıkla: düzenle, sürükle: sırala)"), listView);
         root.setPadding(new Insets(10));
         VBox.setVgrow(listView, Priority.ALWAYS);
@@ -178,5 +191,17 @@ public class GirisWindow {
 
     private void jsonKaydet() {
         JsonUtil.write(girisJsonYolu, data);
+    }
+
+    private Button metinButonu(String ad, String aciklama, Supplier<String> al, Consumer<String> yaz) {
+        Button b = new Button(ad);
+        b.setOnAction(e -> Dialogs.multilineInput(ad, aciklama, al.get()).ifPresent(yeni -> {
+            if (!yeni.equals(al.get())) {
+                yaz.accept(yeni);
+                jsonKaydet();
+                Toast.show(stage, ad + " güncellendi.", Toast.Tip.BASARI);
+            }
+        }));
+        return b;
     }
 }

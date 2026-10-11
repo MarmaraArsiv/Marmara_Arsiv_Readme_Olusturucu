@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Python: {"oneri_sahibi": str, "oneriler": [str, ...]} — ders.derse_dair_oneriler listesinin
- * bir öğesi. Her "oneri" serbest metindir ve içinde markdown linki olabilir (link göreceli
- * hale getirme burada uygulanır, bkz. Yardimci.kaynakLinkleriniGoreceliYap).
+ * Bir dersin "Derse Dair Öneriler" bölümünde, öneri sahibine göre gruplanmış öneriler.
+ * Her öneri serbest metindir (markdown link içerebilir) ve README'ye olduğu gibi yazılır.
  */
 public class OneriGrubu extends JsonNesnesi {
     public String oneri_sahibi = "";

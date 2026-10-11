@@ -72,6 +72,15 @@ public final class GitHelper {
         return calistir(repoPath, "push");
     }
 
+    /** GitHub'daki yeni commit'leri alır, yerel commit'leri üstüne dizer (yerel commit'ler kaybolmaz). */
+    public static SonucCikti gitPullRebase(Path repoPath) {
+        return calistir(repoPath, "pull", "--rebase");
+    }
+
+    public static SonucCikti gitRebaseAbort(Path repoPath) {
+        return calistir(repoPath, "rebase", "--abort");
+    }
+
     public static SonucCikti gitRestore(Path repoPath, String filePath) {
         return calistir(repoPath, "restore", "--", filePath);
     }

@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -89,6 +90,7 @@ public class ReadmeGenerator {
         DonemlerBolumu donemler = oku(DONEMLER_JSON, DonemlerBolumu.class);
         KatkidaBulunanlarBolumu katkida = oku(KATKIDA_BULUNANLAR_JSON, KatkidaBulunanlarBolumu.class);
 
+        dogrula(donemler, konfig);
         Map<String, Hoca> hocaAdina = new HashMap<>();
         hocalar.hocalar.forEach(h -> hocaAdina.put(h.ad, h));
         hocaDersleriDegisti = hocaDersleriniEsitle();
@@ -117,6 +119,78 @@ public class ReadmeGenerator {
             sonuc.put(Path.of(d.klasor, Sabitler.README_MD), dersWriter.yaz(d));
         }
         return sonuc;
+    }
+
+    /**
+     * README yazmadan önce JSON'daki tutarsızlıkları yakalar (ör. klasörü boş bir ders ana README'nin
+     * üzerine yazılmasın). Hata varsa hiçbir dosyaya dokunmadan hepsini birlikte bildirir.
+     */
+    private void dogrula(DonemlerBolumu donemler, Konfigurasyon konfig) {
+        List<String> hatalar = new ArrayList<>();
+        Set<String> ustKlasorler = new HashSet<>();
+        for (Donem d : donemler.donemler) {
+            klasorKontrol("Dönem \"" + d.donem_adi + "\"", d.klasor, ustKlasorler, hatalar);
+        }
+        for (Havuz h : donemler.havuzlar) {
+            klasorKontrol("Havuz \"" + h.ad + "\"", h.klasor, ustKlasorler, hatalar);
+        }
+        Set<String> dersKlasorleri = new HashSet<>();
+        for (Ders d : dersler.dersler) {
+            String ad = "Ders \"" + d.ad + "\"";
+            if (d.ad.isBlank()) {
+                hatalar.add("Adı boş bir ders var (klasör: " + d.klasor + ").");
+            }
+            if (!ustKlasorler.contains(d.ustKlasor()) || d.klasorAdi().isBlank() || d.klasor.equals(d.ustKlasor())) {
+                hatalar.add(ad + ": klasör \"" + d.klasor + "\" bir dönem/havuz klasörünün altında olmalı (ör. 1-1/Ders Adı).");
+            }
+            if (!dersKlasorleri.add(d.klasor)) {
+                hatalar.add(ad + ": \"" + d.klasor + "\" klasörü birden fazla derste kullanılmış.");
+            }
+            Set<String> yillar = new HashSet<>();
+            for (AkademisyenYili y : d.akademisyenler) {
+                if (!y.yil.matches("\\d{4}-\\d{4}")) {
+                    hatalar.add(ad + ": akademik yıl \"" + y.yil + "\" 2025-2026 biçiminde olmalı.");
+                }
+                if (!yillar.add(y.yil)) {
+                    hatalar.add(ad + ": " + y.yil + " yılı iki kez girilmiş.");
+                }
+                if (y.hocalar.isEmpty() || y.hocalar.stream().anyMatch(h -> h.ad.isBlank())) {
+                    hatalar.add(ad + ": " + y.yil + " yılında boş hoca adı var.");
+                }
+            }
+        }
+        Set<String> gruplar = new HashSet<>();
+        hocalar.gruplar.forEach(g -> gruplar.add(g.ad));
+        Set<String> adlar = new HashSet<>();
+        Set<String> kisaltmalar = new HashSet<>();
+        for (Hoca h : hocalar.hocalar) {
+            if (h.ad.isBlank() || !adlar.add(h.ad)) {
+                hatalar.add("Hoca adı boş ya da iki kez girilmiş: \"" + h.ad + "\".");
+            }
+            if (h.kisaltma.isBlank() || !kisaltmalar.add(h.kisaltma)) {
+                hatalar.add("Hoca \"" + h.ad + "\": kısaltma boş ya da başka bir hocada da var (\"" + h.kisaltma + "\").");
+            }
+            if (!gruplar.contains(h.grup)) {
+                hatalar.add("Hoca \"" + h.ad + "\": grup \"" + h.grup + "\" hocalar.json gruplarında yok.");
+            }
+        }
+        for (String form : List.of("hoca_yorumlama", "ders_yorumlama", "ders_oylama")) {
+            if (konfig.formAlani(form, "link").isBlank()) {
+                hatalar.add("konfigurasyon.json: formlar." + form + ".link boş.");
+            }
+        }
+        if (!hatalar.isEmpty()) {
+            throw new IllegalStateException("JSON dosyalarında düzeltilmesi gerekenler var, README'lere dokunulmadı:\n- "
+                    + String.join("\n- ", hatalar));
+        }
+    }
+
+    private static void klasorKontrol(String sahip, String klasor, Set<String> kullanilan, List<String> hatalar) {
+        if (klasor == null || klasor.isBlank() || klasor.contains("/")) {
+            hatalar.add(sahip + ": klasör boş olamaz ve \"/\" içeremez.");
+        } else if (!kullanilan.add(klasor)) {
+            hatalar.add(sahip + ": \"" + klasor + "\" klasörü birden fazla dönem/havuzda kullanılmış.");
+        }
     }
 
     private List<Ders> derslerIn(String ustKlasor) {

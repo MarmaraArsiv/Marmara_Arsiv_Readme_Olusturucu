@@ -24,10 +24,6 @@ public class Hoca extends JsonNesnesi {
      */
     public List<String> dersler = new ArrayList<>();
 
-    // --- Eski arayüz alanı, JSON'a yazılmaz.
-    @JsonIgnore
-    public List<String> bolumler = new ArrayList<>();
-
     @JsonIgnore
     public String emoji() {
         return erkek_mi == null ? "🧑‍🏫" : erkek_mi ? "👨‍🏫" : "👩‍🏫";

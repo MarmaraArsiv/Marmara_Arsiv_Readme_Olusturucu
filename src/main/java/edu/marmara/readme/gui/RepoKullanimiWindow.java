@@ -221,7 +221,15 @@ public class RepoKullanimiWindow {
                 Toast.show(stage, "Kavram silindi.", Toast.Tip.BASARI);
             }
         });
-        VBox box = new VBox(8, baslikBtn, new HBox(8, ekleBtn, silBtn, aramaAlani), sayiLabel, listView);
+        Button kavramAciklamasiBtn = new Button("Kavramlar açıklaması");
+        kavramAciklamasiBtn.setOnAction(e -> Dialogs.multilineInput("Kavramlar açıklaması",
+                "Kavram listesinin üstündeki paragraf (satır sonları korunur):", data.kavram_aciklamasi)
+                .ifPresent(yeni -> {
+                    data.kavram_aciklamasi = yeni.strip();
+                    jsonKaydet();
+                }));
+        VBox box = new VBox(8, new HBox(8, baslikBtn, kavramAciklamasiBtn), new HBox(8, ekleBtn, silBtn, aramaAlani),
+                sayiLabel, listView, new Label("Kavramlar README'de bu listedeki sırayla görünür."));
         box.setPadding(new Insets(8));
         VBox.setVgrow(listView, Priority.ALWAYS);
         return box;

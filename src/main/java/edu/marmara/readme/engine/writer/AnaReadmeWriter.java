@@ -76,8 +76,13 @@ public class AnaReadmeWriter {
         sb.append("- [✍️ **Hocalar için yorum linki**](").append(konfig.formAlani("hoca_yorumlama", "link")).append(")\n");
         sb.append("- [✍️ **Dersler için yorum linki**](").append(konfig.formAlani("ders_yorumlama", "link")).append(")\n");
         sb.append("- [⭐ **Dersler için oylama linki**](").append(konfig.formAlani("ders_oylama", "link")).append(")\n\n");
-        sb.append(giris.katkida_bulunun);
-        sb.append(giris.sayac);
+        // Arayüzden düzenlenen ham metinler: sondaki boşluklar ne olursa olsun bölüm bir boş satırla biter.
+        if (!giris.katkida_bulunun.isBlank()) {
+            sb.append(giris.katkida_bulunun.stripTrailing()).append("\n\n");
+        }
+        if (!giris.sayac.isBlank()) {
+            sb.append(giris.sayac.stripTrailing()).append("\n\n");
+        }
         sb.append("<details>\n<summary><b>🗂 İçindekiler</b></summary>\n\n## 🗂 İçindekiler\n\n");
         for (String bolum : giris.icindekiler) {
             sb.append("- 🔗 ").append(bolum).append("\n");

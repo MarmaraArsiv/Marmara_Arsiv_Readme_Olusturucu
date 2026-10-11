@@ -19,6 +19,15 @@ public final class ReadmeOlusturCli {
     }
 
     public static void main(String[] args) {
+        try {
+            calistir(args);
+        } catch (IllegalStateException e) {
+            System.err.println(e.getMessage());
+            System.exit(2);
+        }
+    }
+
+    private static void calistir(String[] args) {
         Path jsonDeposu = args.length > 0 ? Path.of(args[0]) : Path.of(".");
         boolean kontrol = List.of(args).contains("--kontrol");
         if (!kontrol) {

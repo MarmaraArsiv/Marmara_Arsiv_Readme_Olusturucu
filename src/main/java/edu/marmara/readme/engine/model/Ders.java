@@ -27,16 +27,6 @@ public class Ders extends JsonNesnesi {
     public List<AkademisyenYili> akademisyenler = new ArrayList<>();
     public List<OneriGrubu> derse_dair_oneriler = new ArrayList<>();
 
-    // --- Eski arayüz alanları: arayüz yeni yapıya geçene kadar derlensin diye duruyor, JSON'a yazılmaz.
-    @JsonIgnore
-    public boolean guncel_mi = true;
-    @JsonIgnore
-    public List<HocaKisaRef> dersi_veren_hocalar = new ArrayList<>();
-    @JsonIgnore
-    public List<String> faydali_olabilecek_kaynaklar = new ArrayList<>();
-    @JsonIgnore
-    public List<String> mufredatlar = new ArrayList<>();
-
     /** Klasör bir dönem klasöründeyse (1-1 … 4-2) o dönemin klasör adı, seçmeli havuzundaysa havuz adı. */
     @JsonIgnore
     public String ustKlasor() {
