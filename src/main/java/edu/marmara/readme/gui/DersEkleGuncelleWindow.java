@@ -5,6 +5,8 @@ import edu.marmara.readme.engine.model.Ders;
 import edu.marmara.readme.engine.model.DerslerBolumu;
 import edu.marmara.readme.engine.model.DonemlerBolumu;
 import edu.marmara.readme.engine.model.HocalarBolumu;
+import edu.marmara.readme.engine.model.Konfigurasyon;
+import edu.marmara.readme.engine.model.MufredatAyari;
 import edu.marmara.readme.engine.util.JsonUtil;
 import edu.marmara.readme.engine.util.MetinIslemleri;
 import javafx.collections.FXCollections;
@@ -36,6 +38,7 @@ public class DersEkleGuncelleWindow {
     private final Path derslerJsonYolu;
     private final Path hocalarJsonYolu;
     private final Path donemlerJsonYolu;
+    private final Path konfigurasyonJsonYolu;
 
     private DerslerBolumu data;
     private DonemlerBolumu donemler;
@@ -52,6 +55,7 @@ public class DersEkleGuncelleWindow {
         this.derslerJsonYolu = jsonDeposu.resolve(ReadmeGenerator.DERSLER_JSON);
         this.hocalarJsonYolu = jsonDeposu.resolve(ReadmeGenerator.HOCALAR_JSON);
         this.donemlerJsonYolu = jsonDeposu.resolve(ReadmeGenerator.DONEMLER_JSON);
+        this.konfigurasyonJsonYolu = jsonDeposu.resolve(ReadmeGenerator.KONFIGURASYON_JSON);
     }
 
     public void show() {
@@ -193,7 +197,9 @@ public class DersEkleGuncelleWindow {
 
     private void dersDuzenlemeAc(Ders ders) {
         HocalarBolumu hocalar = JsonUtil.read(hocalarJsonYolu, HocalarBolumu.class);
+        Konfigurasyon konfig = JsonUtil.read(konfigurasyonJsonYolu, Konfigurasyon.class);
         new DersDuzenlemeDialog(stage, ders, data, hocalar, donemler,
+                konfig != null ? konfig.mufredat : new MufredatAyari(),
                 () -> {
                     jsonKaydet();
                     dersleriYenile();

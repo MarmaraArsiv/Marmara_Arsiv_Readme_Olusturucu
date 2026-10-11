@@ -4,6 +4,7 @@ import edu.marmara.readme.engine.ReadmeGenerator;
 import edu.marmara.readme.engine.model.DerslerBolumu;
 import edu.marmara.readme.engine.model.DonemlerBolumu;
 import edu.marmara.readme.engine.model.HocalarBolumu;
+import edu.marmara.readme.engine.model.MufredatAyari;
 import edu.marmara.readme.engine.util.JsonUtil;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -116,9 +117,10 @@ class ArayuzDumanTest {
         fxIcindeCalistir("Git İşlemleri", () -> new GitIslemleriWindow(json).show(), hatalar);
         fxIcindeCalistir("Ders düzenle (akademisyenli)", () -> new DersDuzenlemeDialog(new Stage(),
                 dersler.dersler.stream().filter(d -> !d.akademisyenler.isEmpty()).findFirst().orElseThrow(),
-                dersler, hocalar, donemler, () -> { }, d -> { }).show(), hatalar);
+                dersler, hocalar, donemler, new MufredatAyari(), () -> { }, d -> { }).show(), hatalar);
         fxIcindeCalistir("Ders ekle", () -> new DersDuzenlemeDialog(new Stage(), null, dersler, hocalar, donemler,
-                () -> { }, d -> { }).show(), hatalar);
+                new MufredatAyari(), () -> { }, d -> { }).show(), hatalar);
+        fxIcindeCalistir("Yeni bölüm arşivi", () -> new YeniArsivWindow(new Stage()).show(), hatalar);
         fxIcindeCalistir("Yıl düzenle", () -> new AkademisyenYiliDialog(new Stage(),
                 dersler.dersler.get(0).akademisyenler.get(0), null, hocalar,
                 dersler.dersler.get(0).akademisyenler).show(), hatalar);

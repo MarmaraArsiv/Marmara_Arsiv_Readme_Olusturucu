@@ -73,9 +73,16 @@ public class AnaReadmeWriter {
     private void yazGiris(StringBuilder sb) {
         sb.append("# 📖 ").append(giris.baslik).append("\n\n").append(giris.aciklama).append("\n\n");
         sb.append(" ## 🗣️ Geri Bildirimde Bulunun\n\n").append(giris.geri_bildirim_aciklamasi).append("\n\n");
-        sb.append("- [✍️ **Hocalar için yorum linki**](").append(konfig.formAlani("hoca_yorumlama", "link")).append(")\n");
-        sb.append("- [✍️ **Dersler için yorum linki**](").append(konfig.formAlani("ders_yorumlama", "link")).append(")\n");
-        sb.append("- [⭐ **Dersler için oylama linki**](").append(konfig.formAlani("ders_oylama", "link")).append(")\n\n");
+        String hocaYorum = konfig.formAlani("hoca_yorumlama", "link");
+        String dersYorum = konfig.formAlani("ders_yorumlama", "link");
+        String dersOylama = konfig.formAlani("ders_oylama", "link");
+        if (hocaYorum.isBlank() && dersYorum.isBlank() && dersOylama.isBlank()) {
+            sb.append("- ℹ️ Geri bildirim formları yakında eklenecek.\n\n");
+        } else {
+            sb.append("- [✍️ **Hocalar için yorum linki**](").append(hocaYorum).append(")\n");
+            sb.append("- [✍️ **Dersler için yorum linki**](").append(dersYorum).append(")\n");
+            sb.append("- [⭐ **Dersler için oylama linki**](").append(dersOylama).append(")\n\n");
+        }
         // Arayüzden düzenlenen ham metinler: sondaki boşluklar ne olursa olsun bölüm bir boş satırla biter.
         if (!giris.katkida_bulunun.isBlank()) {
             sb.append(giris.katkida_bulunun.stripTrailing()).append("\n\n");
@@ -163,7 +170,7 @@ public class AnaReadmeWriter {
         if (!d.akademisyenler.isEmpty()) {
             sb.append("  - ").append(Parcalar.AKADEMISYENLER.replace("Dersi Yürüten Akademisyenler:",
                     "**Dersi Yürüten Akademisyenler:**")).append("\n");
-            sb.append(Parcalar.kokAkademisyenSatiri(d, hocaAdina));
+            sb.append(Parcalar.kokAkademisyenSatiri(d, hocaAdina, konfig.mufredat));
         }
         sb.append("  - 📂 [Ders Klasörü](./").append(UrlKodla.kodla(d.klasor)).append(")");
         return sb.toString();

@@ -1,0 +1,27 @@
+# Yeni bölüm arşivine yazılan şablon dosyaları: <tür> <şablondaki yol> <arşivdeki yol>
+#
+# altyapi : tüm bölüm arşivlerinde aynı olan dosyalar. Yeni arşive yazılır; "Altyapıyı Güncelle"
+#           açık arşivdekini de bu sürümle eşitler.
+# kurulum : yalnızca yeni arşiv kurulurken bir kez yazılır; sonra bölüm kendi içeriğine göre değiştirir.
+# Türün sonundaki "+" : dosyadaki {{REPO}} gibi yer tutucular doldurulur. Diğer dosyalar olduğu gibi
+#           kopyalanır (iş akışlarındaki ${{ github.token }} gibi GitHub ifadelerine dokunulmaz).
+
+altyapi   github/workflows/form_yorum_takibi.yml          .github/workflows/form_yorum_takibi.yml
+altyapi   github/workflows/readme_otomatik_guncelleme.yml .github/workflows/readme_otomatik_guncelleme.yml
+altyapi   github/scripts/form_linkleri.py                 .github/scripts/form_linkleri.py
+altyapi   github/scripts/katkida_bulunanlari_guncelle.py  .github/scripts/katkida_bulunanlari_guncelle.py
+altyapi   github/scripts/readme_gorselleri.py             .github/scripts/readme_gorselleri.py
+altyapi+  github/google_form/form_olustur.gs              .github/google_form/form_olustur.gs
+altyapi+  github/google_form/telegram_bot.gs              .github/google_form/telegram_bot.gs
+altyapi   github/google_form/KURULUM.md                   .github/google_form/KURULUM.md
+altyapi   gitignore                                       .gitignore
+altyapi   gitattributes                                   .gitattributes
+
+kurulum   github/STANDARTLAR.md                           .github/STANDARTLAR.md
+kurulum+  CONTRIBUTING.md                                 CONTRIBUTING.md
+kurulum+  LICENSE                                         LICENSE
+kurulum+  json/giris.json                                 .github/json_dosyalari/giris.json
+kurulum+  json/repo_kullanimi.json                        .github/json_dosyalari/repo_kullanimi.json
+kurulum+  json/dersler.json                               .github/json_dosyalari/dersler.json
+kurulum+  json/hocalar.json                               .github/json_dosyalari/hocalar.json
+kurulum+  json/katkida_bulunanlar.json                    .github/json_dosyalari/katkida_bulunanlar.json

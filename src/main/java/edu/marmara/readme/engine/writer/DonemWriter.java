@@ -62,7 +62,7 @@ public class DonemWriter {
             }
             if (!d.akademisyenler.isEmpty()) {
                 sb.append("#### ").append(Parcalar.AKADEMISYENLER).append("\n");
-                sb.append(Parcalar.akademisyenListesi(d, hocalar)).append("\n");
+                sb.append(Parcalar.akademisyenListesi(d, hocalar, konfig.mufredat)).append("\n");
             }
         }
         return sb.toString();

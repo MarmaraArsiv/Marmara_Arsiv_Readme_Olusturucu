@@ -7,6 +7,7 @@ import edu.marmara.readme.engine.model.DerslerBolumu;
 import edu.marmara.readme.engine.model.Donem;
 import edu.marmara.readme.engine.model.DonemlerBolumu;
 import edu.marmara.readme.engine.model.HocalarBolumu;
+import edu.marmara.readme.engine.model.MufredatAyari;
 import edu.marmara.readme.engine.model.OneriGrubu;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,14 +31,12 @@ import java.util.function.Consumer;
 /** Tek bir dersi ekler/düzenler: klasör, tip, müfredat ve notu, yıl yıl hocalar, öneriler. */
 public class DersDuzenlemeDialog {
 
-    private static final List<String> VARSAYILAN_MUFREDATLAR =
-            List.of("Her İki Müfredat", "2026 Öncesi", "2026 Sonrası", "2026 Öncesi (Zorunlu)");
-
     private final Stage owner;
     private final Ders duzenlenecekDers; // null ise "ekle" modu
     private final DerslerBolumu derslerData;
     private final HocalarBolumu hocalarData;
     private final DonemlerBolumu donemlerData;
+    private final MufredatAyari mufredatAyari;
     private final Runnable onSaved;
     private final Consumer<Ders> onDeleted;
 
@@ -54,12 +53,14 @@ public class DersDuzenlemeDialog {
     private ListView<String> oneriListView;
 
     public DersDuzenlemeDialog(Stage owner, Ders ders, DerslerBolumu derslerData, HocalarBolumu hocalarData,
-                               DonemlerBolumu donemlerData, Runnable onSaved, Consumer<Ders> onDeleted) {
+                               DonemlerBolumu donemlerData, MufredatAyari mufredatAyari, Runnable onSaved,
+                               Consumer<Ders> onDeleted) {
         this.owner = owner;
         this.duzenlenecekDers = ders;
         this.derslerData = derslerData;
         this.hocalarData = hocalarData != null ? hocalarData : new HocalarBolumu();
         this.donemlerData = donemlerData != null ? donemlerData : new DonemlerBolumu();
+        this.mufredatAyari = mufredatAyari;
         this.onSaved = onSaved;
         this.onDeleted = onDeleted;
     }
@@ -93,13 +94,15 @@ public class DersDuzenlemeDialog {
             }
         });
 
-        Set<String> mufredatlar = new LinkedHashSet<>(VARSAYILAN_MUFREDATLAR);
+        // Seçenekler bölümün konfigurasyon.json'undan (Konfigürasyon penceresinden düzenlenir); ilki varsayılan.
+        Set<String> mufredatlar = new LinkedHashSet<>(mufredatAyari.secenekler);
         derslerData.dersler.forEach(x -> mufredatlar.add(x.mufredat));
         mufredatBox = new ComboBox<>(FXCollections.observableArrayList(mufredatlar));
         mufredatBox.setEditable(true);
-        mufredatBox.setValue(duzenlenecekDers != null ? d.mufredat : "Her İki Müfredat");
+        mufredatBox.setValue(duzenlenecekDers != null ? d.mufredat
+                : mufredatlar.isEmpty() ? "" : mufredatlar.iterator().next());
         mufredatNotuAlani = new TextField(d.mufredat_notu);
-        mufredatNotuAlani.setPromptText("İsteğe bağlı, ör. 2026 sonrası müfredatta 2. yarıyılda (1-2) yer alıyor.");
+        mufredatNotuAlani.setPromptText("İsteğe bağlı, ör. yeni müfredatta 2. yarıyılda (1-2) yer alıyor.");
 
         for (AkademisyenYili y : d.akademisyenler) {
             yillar.add(kopya(y));

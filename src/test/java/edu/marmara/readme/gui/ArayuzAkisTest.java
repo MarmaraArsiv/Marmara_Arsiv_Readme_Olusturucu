@@ -1,5 +1,6 @@
 package edu.marmara.readme.gui;
 
+import edu.marmara.readme.engine.ArsivSablonu;
 import edu.marmara.readme.engine.ReadmeGenerator;
 import edu.marmara.readme.engine.model.AkademisyenYili;
 import edu.marmara.readme.engine.model.Ders;
@@ -8,6 +9,7 @@ import edu.marmara.readme.engine.model.DerslerBolumu;
 import edu.marmara.readme.engine.model.Hoca;
 import edu.marmara.readme.engine.model.HocalarBolumu;
 import edu.marmara.readme.engine.model.Konfigurasyon;
+import edu.marmara.readme.engine.model.MufredatAyari;
 import edu.marmara.readme.engine.util.JsonUtil;
 import edu.marmara.readme.engine.util.UrlKodla;
 import javafx.application.Platform;
@@ -21,6 +23,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.junit.jupiter.api.AfterEach;
@@ -479,5 +482,84 @@ class ArayuzAkisTest {
         diyalogDugmesi(pencere("Tamam"), ButtonType.OK);
         kapat(w2, kapandi2);
         assertEquals("yerelde kalan commit\n", git(uzak, "log", "-1", "--format=%s", "main"));
+    }
+
+    // ------------------------------------------------------------ başka bölümler
+
+    @Test
+    void yeniBolumArsiviSihirbazlaKurulur(@TempDir Path gecici) throws Exception {
+        Path[] sonuc = new Path[1];
+        CountDownLatch kapandi = arkaPlanda(() -> sonuc[0] = new YeniArsivWindow(null).show());
+        Window w = pencere("Yeni Bölüm Arşivi");
+
+        // Boş formla Oluştur: eksik bilgi uyarısı, hiçbir şey kurulmaz.
+        bas(w, "Oluştur");
+        diyalogDugmesi(pencere("Eksik Bilgi"), ButtonType.OK);
+
+        fx(() -> {
+            ((TextField) etiketinAltindaki(w, "Bölüm Adı")).setText("Elektrik-Elektronik Mühendisliği");
+            HBox ust = etiketinAltindaki(w, "Arşivin Konulacağı Klasör");
+            ((TextField) ust.getChildren().get(0)).setText(gecici.toString());
+            ((TextArea) etiketinAltindaki(w, "Seçmeli Havuzları (her satıra bir tane, boş bırakılabilir)"))
+                    .setText("Mesleki Seçmeli");
+            return null;
+        });
+        // Repo adresi ve Drive klasörü bölüm adından önerilir.
+        assertEquals("https://github.com/MarmaraArsiv/tek_elektrik",
+                fx(() -> ((TextField) etiketinAltindaki(w, "GitHub Reposu")).getText()));
+        assertEquals("Elektrik-Teknoloji",
+                fx(() -> ((TextField) etiketinAltindaki(w, "Drive Klasörü (Katkıda Bulunun bölümünde geçer)")).getText()));
+
+        bas(w, "Oluştur");
+        diyalogDugmesi(pencere("Arşiv Oluşturuldu"), ButtonType.OK);
+        bekle(kapandi);
+
+        Path kok = gecici.resolve("tek_elektrik");
+        assertEquals(kok.resolve(".github/json_dosyalari").toAbsolutePath().normalize(), sonuc[0]);
+        assertTrue(Files.readString(kok.resolve("README.md")).startsWith("# 📖 Marmara Elektrik-Elektronik Mühendisliği Arşiv"));
+        assertTrue(Files.exists(kok.resolve("Mesleki Seçmeli/README.md")));
+        assertFalse(Files.exists(kok.resolve("Üniversite Seçmeli")));
+        assertEquals(List.of(), new ReadmeGenerator(sonuc[0], null).farkliOlanlar());
+    }
+
+    @Test
+    void formAyarlariYapistirilincaReadmelereLinklerGelir(@TempDir Path gecici) throws Exception {
+        Path json = ArsivSablonu.yeniArsivOlustur(gecici.resolve("tek_elektrik"), new ArsivSablonu.BolumBilgisi(
+                "Elektrik-Elektronik Mühendisliği", "Teknoloji Fakültesi", "https://github.com/MarmaraArsiv/tek_elektrik",
+                4, List.of(), new MufredatAyari(), ""), s -> { });
+
+        CountDownLatch kapandi = arkaPlanda(() -> new KonfigurasyonWindow(json).show());
+        Window w = pencere("Konfigürasyon Düzenle");
+        // Apps Script günlüğünden açıklama satırıyla birlikte kopyalanmış çıktı.
+        String gunluk = """
+                README aracında Konfigürasyon → "Form ayarlarını yapıştır" kutusuna şunu yapıştır:
+                {
+                  "hoca_yorumlama": {"link": "https://f/h/viewform", "hoca_alani": "1", "isim_alani": "2",
+                                     "yorum_alani": "3", "hoca_yorumlama_csv": ""},
+                  "ders_yorumlama": {"link": "https://f/dy/viewform", "ders_alani": "4", "isim_alani": "5",
+                                     "yorum_alani": "6", "ders_yorumlama_csv": ""},
+                  "ders_oylama": {"link": "https://f/do/viewform", "ders_alani": "7", "kolaylik_alani": "8",
+                                  "gereklilik_alani": "9", "ders_oylama_csv": ""}
+                }""";
+        fx(() -> {
+            ((TextArea) etiketinAltindaki(w, "Form ayarlarını yapıştır")).setText(gunluk);
+            ((TextArea) etiketinAltindaki(w, "Müfredat Seçenekleri (her satıra bir tane; ilki yeni derslerin varsayılanı)"))
+                    .setText("Güncel Müfredat\n");
+            ((TextField) etiketinAltindaki(w, "Eski Müfredat Öneki (boşsa eski müfredat notu yazılmaz)")).setText("");
+            return null;
+        });
+        bas(w, "Yapıştırılanı Alanlara Doldur");
+        assertEquals("https://f/do/viewform", fx(() -> ((TextField) etiketinAltindaki(w, "Ders Oylama Formu linki")).getText()));
+        bas(w, "Kaydet");
+        diyalogDugmesi(pencere("Kaydedildi"), ButtonType.OK);
+        bekle(kapandi);
+
+        Konfigurasyon k = JsonUtil.read(json.resolve(ReadmeGenerator.KONFIGURASYON_JSON), Konfigurasyon.class);
+        assertEquals("8", k.formAlani("ders_oylama", "kolaylik_alani"));
+        assertEquals("1", k.formAlani("hoca_yorumlama", "hoca_alani"));
+        assertEquals(List.of("Güncel Müfredat"), k.mufredat.secenekler);
+        assertEquals("", k.mufredat.eski_mufredat_oneki);
+        String readme = new ReadmeGenerator(json, null).uret().get(Path.of("README.md"));
+        assertTrue(readme.contains("- [⭐ **Dersler için oylama linki**](https://f/do/viewform)"), readme);
     }
 }

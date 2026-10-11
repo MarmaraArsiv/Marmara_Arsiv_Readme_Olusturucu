@@ -1,0 +1,35 @@
+{
+    "bolum_adi": "Hocalar",
+    "bolum_aciklamasi": "📚 Bu bölüm, Marmara Üniversitesi {{FAKULTE_ADI}} {{BOLUM_ADI}} bölümündeki hocaların detaylı bilgilerini içerir. Hocaların adları, ofis bilgileri, araştırma sayfalarının bağlantıları ve verdikleri bazı dersler bu bölümde listelenmektedir. Hocaların puanlamaları tamamen subjektiftir ve 0-10 yıldız arasında yapılmıştır.",
+    "gruplar": [
+        {
+            "ad": "Profesörler",
+            "aciklama": ""
+        },
+        {
+            "ad": "Doçentler",
+            "aciklama": ""
+        },
+        {
+            "ad": "Doktor Öğretim Üyeleri",
+            "aciklama": ""
+        },
+        {
+            "ad": "Öğretim Görevlileri",
+            "aciklama": ""
+        },
+        {
+            "ad": "Araştırma Görevlileri",
+            "aciklama": ""
+        },
+        {
+            "ad": "Diğer Bölümlerden Ders Veren Hocalar",
+            "aciklama": "Bölüme servis dersi (Fizik, Matematik, Kimya, Türk Dili, İngilizce vb.) veren, başka bölümlerden gelen hocalar."
+        },
+        {
+            "ad": "Önceki Yıllarda Ders Veren Hocalar",
+            "aciklama": "Son iki akademik yılda bölümde dersi görünmeyen hocalar."
+        }
+    ],
+    "hocalar": []
+}

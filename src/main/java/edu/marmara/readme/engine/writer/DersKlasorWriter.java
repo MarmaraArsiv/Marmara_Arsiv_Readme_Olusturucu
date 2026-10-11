@@ -56,7 +56,7 @@ public class DersKlasorWriter {
         }
         if (!d.akademisyenler.isEmpty()) {
             sb.append("## ").append(Parcalar.AKADEMISYENLER).append("\n");
-            sb.append(Parcalar.akademisyenListesi(d, hocalar)).append("\n");
+            sb.append(Parcalar.akademisyenListesi(d, hocalar, konfig.mufredat)).append("\n");
         }
         sb.append(Parcalar.hocaBolumu(d, hocalar, korunan, konfig));
         sb.append("## 🤝 Katkıda Bulun\n\n").append(katkidaBulunMetni).append("\n");

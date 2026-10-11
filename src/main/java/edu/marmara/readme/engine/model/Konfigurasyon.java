@@ -24,6 +24,14 @@ public class Konfigurasyon extends JsonNesnesi {
      * betiği de bunu okur; araç yalnızca link ve "…_alani" kimliklerini kullanır, gerisini aynen korur.
      */
     public Map<String, Object> formlar = new LinkedHashMap<>();
+    /** Müfredat seçenekleri ve eski müfredat notu kuralı (bölüme göre değişir). */
+    public MufredatAyari mufredat = new MufredatAyari();
+
+    /** Formun linki ve gereken soru kimliği girilmişse true; formları henüz kurulmamış bölümlerde false. */
+    @JsonIgnore
+    public boolean formHazir(String form, String alan) {
+        return !formAlani(form, "link").isBlank() && !formAlani(form, alan).isBlank();
+    }
 
     /** formlar.<form>.<alan> değeri; yoksa boş metin. */
     @JsonIgnore

@@ -1,5 +1,6 @@
 package edu.marmara.readme.gui;
 
+import edu.marmara.readme.engine.ArsivSablonu;
 import edu.marmara.readme.engine.ReadmeGenerator;
 import edu.marmara.readme.git.GitHelper;
 import javafx.geometry.Insets;
@@ -17,6 +18,8 @@ import java.util.List;
 /**
  * Arşiv reposu için git işlemleri: GitHub'dan çek, README'leri JSON'dan üret, değişiklikleri seçip
  * commit'le ve pushla. Form cevapları (yıldızlar, onaylı yorumlar) GitHub'da otomatik işlenir.
+ * "Altyapıyı Güncelle" GitHub betiklerini ve form betiklerini aracın içindeki ortak sürümle eşitler
+ * (tüm bölüm arşivleri aynı betikleri kullanır).
  */
 public class GitIslemleriWindow {
 
@@ -71,12 +74,33 @@ public class GitIslemleriWindow {
             cikti.setText(durum.isEmpty() ? "Değişiklik yok." : String.join("\n", durum));
         });
 
+        Button altyapiBtn = new Button("🧰 Altyapıyı Güncelle (GitHub betikleri, form betikleri)");
+        altyapiBtn.setOnAction(e -> {
+            cikti.clear();
+            try {
+                List<Path> farkli = ArsivSablonu.altyapiyiGuncelle(dokumanlarRepoYolu, false);
+                if (farkli.isEmpty()) {
+                    cikti.setText("Altyapı dosyaları aracın sürümüyle aynı, güncellenecek bir şey yok.");
+                    return;
+                }
+                cikti.setText("Aracın sürümünden farklı dosyalar:\n  "
+                        + String.join("\n  ", farkli.stream().map(Path::toString).toList()));
+                if (Dialogs.confirm("Altyapıyı Güncelle", farkli.size() + " dosya aracın sürümüyle değiştirilecek. "
+                        + "Bu dosyalarda elle yapılmış değişiklikler varsa kaybolur. Devam edilsin mi?")) {
+                    ArsivSablonu.altyapiyiGuncelle(dokumanlarRepoYolu, true);
+                    cikti.appendText("\n\nGüncellendi. Farkları Pushla penceresinde görüp gönderebilirsin.");
+                }
+            } catch (RuntimeException ex) {
+                Dialogs.error("Hata", ex.getMessage());
+            }
+        });
+
         Button hocaDersAdlariBtn = new Button("👥 Hoca/Ders Adlarını Al");
         hocaDersAdlariBtn.setOnAction(e -> new HocaDersAdlariWindow(jsonDeposu).show());
 
         // Form cevapları (yıldızlar, onaylı yorumlar) GitHub'da otomatik işlenir; burada ayrı bir düğme gerekmez.
         VBox root = new VBox(8, new Label("Sıra: GitHub'dan çek → düzenle → Readme Güncelle → değişiklikleri pushla"),
-                cekBtn, readmeGuncelleBtn, durumBtn, hocaDersAdlariBtn, pushBtn, new Label("Çıktı:"), cikti);
+                cekBtn, readmeGuncelleBtn, durumBtn, hocaDersAdlariBtn, altyapiBtn, pushBtn, new Label("Çıktı:"), cikti);
         root.setPadding(new Insets(10));
         stage.setScene(new Scene(root, 640, 600));
         stage.showAndWait();

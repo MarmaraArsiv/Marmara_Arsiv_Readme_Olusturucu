@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dönemleri (1-1 … 4-2) ve seçmeli havuzlarını düzenler: dönem README başlığı ve genel tavsiyeler,
+ * Dönemleri (ör. 1-1 … 4-2) ve seçmeli havuzlarını düzenler: dönem README başlığı ve genel tavsiyeler,
  * havuz README başlığı ve açıklaması. Sıra, ana README'deki bölüm sırasıdır.
  */
 public class DonemWindow {
@@ -123,7 +123,7 @@ public class DonemWindow {
         klasorAlani.setDisable(donem != null);
         TextField adAlani = new TextField(donem != null ? donem.donem_adi : "");
         adAlani.setPromptText("ör. 1. Sınıf Güz Dönemi");
-        ComboBox<Integer> yilBox = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4));
+        ComboBox<Integer> yilBox = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6));
         yilBox.setValue(donem != null ? donem.yil : 1);
         ComboBox<String> donemBox = new ComboBox<>(FXCollections.observableArrayList("Güz", "Bahar"));
         donemBox.setValue(donem != null ? donem.donem : "Güz");

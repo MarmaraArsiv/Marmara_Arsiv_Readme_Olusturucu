@@ -5,6 +5,7 @@ import edu.marmara.readme.engine.model.Ders;
 import edu.marmara.readme.engine.model.DersHocasi;
 import edu.marmara.readme.engine.model.Hoca;
 import edu.marmara.readme.engine.model.Konfigurasyon;
+import edu.marmara.readme.engine.model.MufredatAyari;
 import edu.marmara.readme.engine.util.GithubSlug;
 import edu.marmara.readme.engine.util.UrlKodla;
 
@@ -23,23 +24,24 @@ final class Parcalar {
     static final int SON_YIL = 2;
     /** Ders sayfasındaki hoca yorumları bölümünde hoca başına gösterilen yorum sayısı. */
     static final int OZETTE_YORUM = 2;
-    private static final String ESKI_MUFREDAT_NOTU =
-            " (bu yıl yeni girenler bu dersi alamaz; ders yalnızca 2026 öncesi müfredattaki öğrenciler için açıldı)";
-
     private Parcalar() {
     }
 
-    /** "**2026-2027**" — 2026 öncesi müfredat dersi 2026-2027 ve sonrasında açıldıysa açıklamasıyla. */
-    static String yilEtiketi(Ders d, String yil) {
-        boolean eski = d.mufredat.startsWith("2026 Öncesi") && yil.compareTo("2026-2027") >= 0;
-        return "**" + yil + "**" + (eski ? ESKI_MUFREDAT_NOTU : "");
+    /**
+     * "**2026-2027**" — eski müfredat dersi, konfigurasyon.json'daki geçiş yılı ve sonrasında açıldıysa
+     * açıklamasıyla (ör. 2026 öncesi müfredat dersi 2026-2027'de).
+     */
+    static String yilEtiketi(Ders d, String yil, MufredatAyari m) {
+        boolean eski = !m.eski_mufredat_oneki.isEmpty() && d.mufredat.startsWith(m.eski_mufredat_oneki)
+                && yil.compareTo(m.eski_mufredat_notu_yili) >= 0;
+        return "**" + yil + "**" + (eski ? " (" + m.eski_mufredat_notu + ")" : "");
     }
 
     /** Ders ve dönem README'sindeki yıl yıl hoca listesi (başlık hariç), her satır "\n" ile biter. */
-    static String akademisyenListesi(Ders d, Map<String, Hoca> hocalar) {
+    static String akademisyenListesi(Ders d, Map<String, Hoca> hocalar, MufredatAyari m) {
         StringBuilder sb = new StringBuilder();
         for (AkademisyenYili y : d.akademisyenler) {
-            sb.append("- ").append(yilEtiketi(d, y.yil)).append(":\n");
+            sb.append("- ").append(yilEtiketi(d, y.yil, m)).append(":\n");
             for (DersHocasi h : y.hocalar) {
                 Hoca hoca = hocalar.get(h.ad);
                 sb.append("  - ");
@@ -53,7 +55,7 @@ final class Parcalar {
     }
 
     /** Ana README ders kartındaki tek satır: en güncel yılın hocaları kısaltma linkleriyle. */
-    static String kokAkademisyenSatiri(Ders d, Map<String, Hoca> hocalar) {
+    static String kokAkademisyenSatiri(Ders d, Map<String, Hoca> hocalar, MufredatAyari m) {
         AkademisyenYili y = d.akademisyenler.get(0);
         List<String> adlar = new ArrayList<>();
         for (DersHocasi h : y.hocalar) {
@@ -63,7 +65,7 @@ final class Parcalar {
                     : h.ad;
             adlar.add(ad + notEki(h));
         }
-        return "    - " + yilEtiketi(d, y.yil) + ": " + String.join(", ", adlar) + "\n";
+        return "    - " + yilEtiketi(d, y.yil, m) + ": " + String.join(", ", adlar) + "\n";
     }
 
     private static String notEki(DersHocasi h) {
@@ -85,33 +87,35 @@ final class Parcalar {
         return k.formAlani(form, "link") + "?usp=pp_url&entry." + k.formAlani(form, alan) + "=" + UrlKodla.kodla(deger);
     }
 
-    static String dersOylamaLinki(Konfigurasyon k, String ders) {
-        return onDoldurulmus(k, "ders_oylama", "ders_alani", ders);
-    }
-
-    static String dersYorumLinki(Konfigurasyon k, String ders) {
-        return onDoldurulmus(k, "ders_yorumlama", "ders_alani", ders);
-    }
-
     static String hocaYorumLinki(Konfigurasyon k, String hoca) {
         return onDoldurulmus(k, "hoca_yorumlama", "hoca_alani", hoca);
     }
 
+    /**
+     * " Siz de [linkten](…) …" cümlesi; form henüz kurulmamışsa (yeni açılan bölüm arşivi) boş metin.
+     * Form kurulunca GitHub betiği bu blokları linkli hâliyle yeniden yazar.
+     */
+    private static String linkCumlesi(Konfigurasyon k, String form, String alan, String deger, String sonu) {
+        return k.formHazir(form, alan) ? " Siz de [linkten](" + onDoldurulmus(k, form, alan, deger) + ") " + sonu : "";
+    }
+
     /** Henüz oy yokken GitHub betiğinin yazdığı yıldız bloğu. */
     static String varsayilanYildiz(String girinti, Konfigurasyon k, String ders) {
-        return girinti + "- ⭐ **Yıldız Sayıları:**\n" + girinti + "    - ℹ️ Henüz yıldız veren yok. Siz de [linkten]("
-                + dersOylamaLinki(k, ders) + ") anonim şekilde oylamaya katılabilirsiniz.\n";
+        return girinti + "- ⭐ **Yıldız Sayıları:**\n" + girinti + "    - ℹ️ Henüz yıldız veren yok."
+                + linkCumlesi(k, "ders_oylama", "ders_alani", ders, "anonim şekilde oylamaya katılabilirsiniz.") + "\n";
     }
 
     /** Henüz onaylı yorum yokken GitHub betiğinin yazdığı ders yorum bloğu. */
     static String varsayilanGorus(String girinti, Konfigurasyon k, String ders) {
-        return girinti + "- 💬 **Öğrenci Görüşleri:**\n" + girinti + "    - ℹ️ Henüz yorum yok. Siz de [linkten]("
-                + dersYorumLinki(k, ders) + ") anonim şekilde görüşlerinizi belirtebilirsiniz.\n";
+        return girinti + "- 💬 **Öğrenci Görüşleri:**\n" + girinti + "    - ℹ️ Henüz yorum yok."
+                + linkCumlesi(k, "ders_yorumlama", "ders_alani", ders, "anonim şekilde görüşlerinizi belirtebilirsiniz.")
+                + "\n";
     }
 
     static String varsayilanHocaGorus(Konfigurasyon k, String hoca) {
-        return "- 💬 **Öğrenci Görüşleri:**\n  - ℹ️ Henüz yorum yok. Siz de [linkten](" + hocaYorumLinki(k, hoca)
-                + ") anonim şekilde görüşlerinizi belirtebilirsiniz.\n";
+        return "- 💬 **Öğrenci Görüşleri:**\n  - ℹ️ Henüz yorum yok."
+                + linkCumlesi(k, "hoca_yorumlama", "hoca_alani", hoca, "anonim şekilde görüşlerinizi belirtebilirsiniz.")
+                + "\n";
     }
 
     // ------------------------------------------------------------ ders sayfasındaki hoca yorumları bölümü
@@ -152,9 +156,13 @@ final class Parcalar {
                     sb.append("    - ℹ️ Diğer ").append(yorumlar.size() - OZETTE_YORUM)
                             .append(" yoruma [hocanın kartından](").append(kart).append(") erişebilirsiniz.\n");
                 }
-                sb.append("    - ✍️ ").append(yorumlar.isEmpty() ? "Henüz yorum yok. " : "")
-                        .append("Siz de [linkten](").append(hocaYorumLinki(k, h.ad))
-                        .append(") bu hoca hakkında anonim şekilde görüşlerinizi belirtebilirsiniz.\n");
+                if (k.formHazir("hoca_yorumlama", "hoca_alani")) {
+                    sb.append("    - ✍️ ").append(yorumlar.isEmpty() ? "Henüz yorum yok. " : "")
+                            .append("Siz de [linkten](").append(hocaYorumLinki(k, h.ad))
+                            .append(") bu hoca hakkında anonim şekilde görüşlerinizi belirtebilirsiniz.\n");
+                } else if (yorumlar.isEmpty()) {
+                    sb.append("    - ✍️ Henüz yorum yok.\n");
+                }
             }
         }
         return sb.append("\n").toString();

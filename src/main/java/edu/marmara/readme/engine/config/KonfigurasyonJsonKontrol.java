@@ -78,10 +78,24 @@ public final class KonfigurasyonJsonKontrol {
             updated = true;
         }
 
+        if (!anahtarVar(path, "mufredat")) {
+            // Eski dosyalarda "mufredat" yok: varsayılan kural (2026 geçişi) dosyaya yazılsın ki görünür ve düzenlenebilir olsun.
+            updated = true;
+        }
+
         if (updated) {
             JsonUtil.write(path, k);
         }
         return k;
+    }
+
+    private static boolean anahtarVar(Path path, String anahtar) {
+        try {
+            return java.nio.file.Files.exists(path)
+                    && JsonUtil.MAPPER.readTree(java.nio.file.Files.readString(path, StandardCharsets.UTF_8)).has(anahtar);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /** repoDizini'nde `git config --get remote.origin.url` çalıştırır; başarısızsa açıklayıcı bir mesaj döner. */

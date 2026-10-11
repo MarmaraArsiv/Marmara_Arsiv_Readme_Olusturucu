@@ -6,7 +6,7 @@
 
     <groupId>edu.marmara.readme</groupId>
     <artifactId>marmara-readme-araci</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -61,6 +61,8 @@
     </dependencies>
 
     <build>
+        <!-- Sürüm numarasız: başlatma betikleri hep aynı dosyayı çalıştırır. -->
+        <finalName>marmara-readme-araci</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

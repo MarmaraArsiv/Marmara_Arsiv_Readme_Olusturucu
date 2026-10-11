@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * JSON dosyalarından arşivin README'lerini üretir: kök README, 8 dönem README'si, seçmeli havuz
@@ -86,6 +87,22 @@ public class ReadmeGenerator {
             }
         }
         return null;
+    }
+
+    /** Verilen klasörün içindeki arşiv repolarının JSON klasörleri (aracın yanındaki bölüm arşivleri). */
+    public static List<Path> komsuArsivler(Path ust) {
+        List<Path> sonuc = new ArrayList<>();
+        try (Stream<Path> s = Files.list(ust)) {
+            for (Path p : s.filter(Files::isDirectory).sorted().toList()) {
+                Path json = p.resolve(JSON_KLASORU_ADAYLARI.get(0));
+                if (Files.exists(json.resolve(KONFIGURASYON_JSON))) {
+                    sonuc.add(json.toAbsolutePath().normalize());
+                }
+            }
+        } catch (IOException ignored) {
+            // okunamayan klasör: arşiv yok sayılır
+        }
+        return sonuc;
     }
 
     public ReadmeGenerator(Path jsonDeposu, Consumer<String> ilerlemeDinleyicisi) {
@@ -209,10 +226,22 @@ public class ReadmeGenerator {
                 hatalar.add("Hoca \"" + h.ad + "\": grup \"" + h.grup + "\" hocalar.json gruplarında yok.");
             }
         }
-        for (String form : List.of("hoca_yorumlama", "ders_yorumlama", "ders_oylama")) {
-            if (konfig.formAlani(form, "link").isBlank()) {
-                hatalar.add("konfigurasyon.json: formlar." + form + ".link boş.");
+        // Formlar henüz kurulmamış olabilir (yeni açılan bölüm); kurulmuşsa soru kimlikleri eksiksiz olmalı.
+        Map<String, List<String>> formAlanlari = Map.of(
+                "hoca_yorumlama", List.of("hoca_alani", "isim_alani", "yorum_alani"),
+                "ders_yorumlama", List.of("ders_alani", "isim_alani", "yorum_alani"),
+                "ders_oylama", List.of("ders_alani", "kolaylik_alani", "gereklilik_alani"));
+        formAlanlari.forEach((form, alanlar) -> {
+            if (!konfig.formAlani(form, "link").isBlank()) {
+                for (String alan : alanlar) {
+                    if (konfig.formAlani(form, alan).isBlank()) {
+                        hatalar.add("konfigurasyon.json: formlar." + form + "." + alan + " boş (formun linki girilmiş).");
+                    }
+                }
             }
+        });
+        if (konfig.mufredat.secenekler.isEmpty()) {
+            hatalar.add("konfigurasyon.json: mufredat.secenekler boş.");
         }
         if (!hatalar.isEmpty()) {
             throw new IllegalStateException("JSON dosyalarında düzeltilmesi gerekenler var, README'lere dokunulmadı:\n- "
