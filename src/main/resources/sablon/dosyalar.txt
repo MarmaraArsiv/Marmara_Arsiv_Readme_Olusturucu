@@ -11,8 +11,8 @@ altyapi   github/workflows/readme_otomatik_guncelleme.yml .github/workflows/read
 altyapi   github/scripts/form_linkleri.py                 .github/scripts/form_linkleri.py
 altyapi   github/scripts/katkida_bulunanlari_guncelle.py  .github/scripts/katkida_bulunanlari_guncelle.py
 altyapi   github/scripts/readme_gorselleri.py             .github/scripts/readme_gorselleri.py
-altyapi+  github/google_form/form_olustur.gs              .github/google_form/form_olustur.gs
-altyapi+  github/google_form/telegram_bot.gs              .github/google_form/telegram_bot.gs
+altyapi   github/google_form/form_olustur.gs              .github/google_form/form_olustur.gs
+altyapi   github/google_form/telegram_bot.gs              .github/google_form/telegram_bot.gs
 altyapi   github/google_form/KURULUM.md                   .github/google_form/KURULUM.md
 altyapi   gitignore                                       .gitignore
 altyapi   gitattributes                                   .gitattributes

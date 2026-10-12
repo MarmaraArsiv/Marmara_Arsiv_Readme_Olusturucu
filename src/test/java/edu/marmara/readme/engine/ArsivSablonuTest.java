@@ -73,7 +73,9 @@ class ArsivSablonuTest {
         // Yer tutucuların hepsi doldu; GitHub'ın ${{ … }} ifadeleri olduğu gibi kaldı.
         f.forEach((yol, metin) -> assertFalse(metin.replace("${{", "").contains("{{"), yol + " içinde yer tutucu kaldı"));
         assertTrue(f.get(".github/workflows/form_yorum_takibi.yml").contains("${{ github.token }}"));
-        f.forEach((yol, metin) -> assertFalse(metin.contains("Bilgisayar") && !metin.contains("YTU Bilgisayar"),
+        // Ortak form betiği bütün bölümleri listeler; onun dışında Bilgisayar'a özel metin olmamalı.
+        f.forEach((yol, metin) -> assertFalse(!yol.endsWith("form_olustur.gs")
+                        && metin.contains("Bilgisayar") && !metin.contains("YTU Bilgisayar"),
                 yol + " içinde Bilgisayar Mühendisliği'ne özel metin var"));
 
         String readme = f.get("README.md");
@@ -84,8 +86,9 @@ class ArsivSablonuTest {
         assertTrue(readme.contains("star-history.com/#MarmaraArsiv/tek_elektrik&Date"));
         assertTrue(f.get("CONTRIBUTING.md").contains("Seçmeli dersler `Mesleki Seçmeli/` ve `Üniversite Seçmeli/` altında."));
         assertTrue(f.get("CONTRIBUTING.md").contains("git clone git@github.com:<kullanıcı-adın>/tek_elektrik.git"));
-        assertTrue(f.get(".github/google_form/form_olustur.gs").contains("const REPO = 'MarmaraArsiv/tek_elektrik';"));
-        assertTrue(f.get(".github/google_form/telegram_bot.gs").contains("getProperty('TG_TOKEN')"));
+        // Formlar ve bot bütün bölümler için tek merkezden: betikler her arşivde aynı, token koda yazılmaz.
+        assertTrue(f.get(".github/google_form/form_olustur.gs").contains("const ARSIVLER = {"));
+        assertTrue(f.get(".github/google_form/telegram_bot.gs").contains("ozellik_('TG_TOKEN')"));
 
         DonemlerBolumu d = JsonUtil.read(json.resolve(ReadmeGenerator.DONEMLER_JSON), DonemlerBolumu.class);
         assertEquals("4. Sınıf Bahar Dönemi", d.donemler.get(7).donem_adi);
